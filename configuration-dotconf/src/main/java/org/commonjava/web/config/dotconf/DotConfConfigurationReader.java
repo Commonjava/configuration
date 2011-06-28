@@ -2,33 +2,35 @@ package org.commonjava.web.config.dotconf;
 
 import static org.apache.commons.io.IOUtils.readLines;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.commonjava.web.config.ConfigurationDispatcher;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.ConfigurationReader;
+import org.commonjava.web.config.ConfigurationRegistry;
 
 @Named( ".conf" )
 public class DotConfConfigurationReader
     implements ConfigurationReader
 {
 
-    private static final String DEFAULT_SECTION = "default";
+    public static final String DEFAULT_SECTION = "default";
 
-    private final ConfigurationDispatcher dispatch;
+    private final ConfigurationRegistry dispatch;
+
+    private final Pattern parameter;
 
     @Inject
-    public DotConfConfigurationReader( final ConfigurationDispatcher dispatch )
+    public DotConfConfigurationReader( final ConfigurationRegistry dispatch )
     {
         this.dispatch = dispatch;
+        parameter = Pattern.compile( "\\s*([-._a-zA-Z0-9]+)\\s*[:=]\\s*([^\\s#]+)(\\s*#.*)?" );
     }
 
     @Override
@@ -45,10 +47,8 @@ public class DotConfConfigurationReader
             throw new ConfigurationException( "Failed to read configuration. Error: %s", e, e.getMessage() );
         }
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream out = new PrintStream( baos );
-
         String sectionName = DEFAULT_SECTION;
+        boolean processSection = dispatch.sectionStarted( sectionName );
         for ( final String line : lines )
         {
             final String trimmed = line.trim();
@@ -59,28 +59,23 @@ public class DotConfConfigurationReader
                     continue;
                 }
 
-                out.flush();
-
-                if ( baos.size() > 0 )
-                {
-                    dispatch.parseSection( sectionName, new ByteArrayInputStream( baos.toByteArray() ) );
-                }
-
+                dispatch.sectionComplete( sectionName );
                 sectionName = trimmed.substring( 1, trimmed.length() - 1 );
-                baos.reset();
+                processSection = dispatch.sectionStarted( sectionName );
             }
-            else
+            else if ( processSection )
             {
-                out.println( line );
+                final Matcher matcher = parameter.matcher( line );
+                if ( matcher.matches() )
+                {
+                    final String key = matcher.group( 1 );
+                    final String value = matcher.group( 2 );
+                    dispatch.parameter( sectionName, key, value );
+                }
             }
         }
 
-        out.flush();
-        if ( baos.size() > 0 )
-        {
-            dispatch.parseSection( sectionName, stream );
-        }
-
+        dispatch.sectionComplete( sectionName );
         dispatch.configurationParsed();
     }
 

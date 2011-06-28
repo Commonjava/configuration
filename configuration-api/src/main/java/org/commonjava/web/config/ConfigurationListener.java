@@ -5,8 +5,8 @@ import java.util.Map;
 public interface ConfigurationListener
 {
 
-    Map<String, ConfigurationParser<?>> getSectionParsers();
+    Map<String, ConfigurationSectionListener<?>> getSectionListeners();
 
-    void configurationParsed()
+    void configurationComplete()
         throws ConfigurationException;
 }
