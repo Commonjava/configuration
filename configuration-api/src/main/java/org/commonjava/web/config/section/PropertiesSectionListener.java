@@ -19,7 +19,6 @@ package org.commonjava.web.config.section;
 import java.util.Properties;
 
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.ConfigurationSectionListener;
 
 public class PropertiesSectionListener
     implements ConfigurationSectionListener<Properties>

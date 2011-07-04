@@ -17,7 +17,9 @@
 package org.commonjava.web.config.dotconf.fixture;
 
 import org.commonjava.web.config.annotation.ConfigNames;
+import org.commonjava.web.config.annotation.SectionName;
 
+@SectionName( "object" )
 public class SimpletonInt
 {
 

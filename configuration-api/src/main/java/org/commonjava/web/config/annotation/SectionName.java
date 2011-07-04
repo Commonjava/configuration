@@ -5,11 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.commonjava.web.config.section.ConfigurationSectionListener;
+
 @Retention( RetentionPolicy.RUNTIME )
 @Target( { ElementType.TYPE } )
 public @interface SectionName
 {
 
-    String value();
+    String value() default ConfigurationSectionListener.DEFAULT_SECTION;
 
 }

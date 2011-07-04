@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.ConfigurationSectionListener;
 
 public class MapSectionListener
     implements ConfigurationSectionListener<Map<String, String>>

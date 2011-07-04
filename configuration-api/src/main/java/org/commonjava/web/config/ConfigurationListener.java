@@ -18,6 +18,8 @@ package org.commonjava.web.config;
 
 import java.util.Map;
 
+import org.commonjava.web.config.section.ConfigurationSectionListener;
+
 public interface ConfigurationListener
 {
 

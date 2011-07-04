@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.web.config;
+package org.commonjava.web.config.section;
 
+import org.commonjava.web.config.ConfigurationException;
 
 public interface ConfigurationSectionListener<T>
 {
+
+    static String DEFAULT_SECTION = "default";
 
     void sectionStarted( String name )
         throws ConfigurationException;

@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.section.BeanSectionListener;
+import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.commonjava.web.config.section.TypedConfigurationSectionListener;
 
 public class DefaultConfigurationListener
     implements ConfigurationListener
@@ -32,21 +35,47 @@ public class DefaultConfigurationListener
     {
     }
 
-    public DefaultConfigurationListener( final ConfigurationSectionListener<?>... sectionListeners )
+    public DefaultConfigurationListener( final Class<?>... sectionTypes )
+        throws ConfigurationException
     {
-        for ( final ConfigurationSectionListener<?> sl : sectionListeners )
+        for ( final Class<?> type : sectionTypes )
         {
-            final SectionName anno = sl.getClass()
-                                       .getAnnotation( SectionName.class );
-
-            if ( anno == null )
-            {
-                throw new IllegalArgumentException( "No @SectionName annotation available for: " + sl.getClass()
-                                                                                                     .getName() );
-            }
-
-            this.sectionListeners.put( anno.value(), sl );
+            processSectionAnnotation( type, null );
         }
+    }
+
+    public DefaultConfigurationListener( final ConfigurationSectionListener<?>... sectionTypes )
+        throws ConfigurationException
+    {
+        for ( final ConfigurationSectionListener<?> type : sectionTypes )
+        {
+            if ( type instanceof TypedConfigurationSectionListener )
+            {
+                final Class<?> cls = ( (TypedConfigurationSectionListener<?>) type ).getConfigurationType();
+                processSectionAnnotation( cls, type );
+            }
+            else
+            {
+                throw new ConfigurationException( "Cannot automatically register section listener: %s", type );
+            }
+        }
+    }
+
+    @SuppressWarnings( { "rawtypes", "unchecked" } )
+    private void processSectionAnnotation( final Class cls, final ConfigurationSectionListener listener )
+        throws ConfigurationException
+    {
+        final SectionName anno = (SectionName) cls.getAnnotation( SectionName.class );
+
+        final String key = anno == null ? ConfigurationSectionListener.DEFAULT_SECTION : anno.value();
+        if ( sectionListeners.containsKey( key ) )
+        {
+            throw new ConfigurationException(
+                                              "Section collision! More than one ConfigurationParser bound to section: %s\n\t%s\n\t%s",
+                                              key, sectionListeners.get( key ), cls.getName() );
+        }
+
+        this.sectionListeners.put( anno.value(), listener == null ? new BeanSectionListener( cls ) : listener );
     }
 
     @Override
@@ -65,5 +94,11 @@ public class DefaultConfigurationListener
     public void configurationComplete()
         throws ConfigurationException
     {
+    }
+
+    public <T> T getConfiguration( final String sectionName, final Class<T> type )
+    {
+        final ConfigurationSectionListener<?> listener = sectionListeners.get( sectionName );
+        return listener == null ? null : type.cast( listener.getConfiguration() );
     }
 }

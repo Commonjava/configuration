@@ -32,6 +32,7 @@ import org.commonjava.web.config.dotconf.fixture.ListEx;
 import org.commonjava.web.config.dotconf.fixture.Simpleton;
 import org.commonjava.web.config.dotconf.fixture.SimpletonInt;
 import org.commonjava.web.config.section.BeanSectionListener;
+import org.commonjava.web.config.section.ConfigurationSectionListener;
 import org.junit.Test;
 
 public class DotConfBeanParsingTest
@@ -126,7 +127,7 @@ public class DotConfBeanParsingTest
 
         final ConfigurationRegistry registry =
             new DefaultConfigurationRegistry(
-                                              new DefaultConfigurationListener().with( DotConfConfigurationReader.DEFAULT_SECTION,
+                                              new DefaultConfigurationListener().with( ConfigurationSectionListener.DEFAULT_SECTION,
                                                                                        sectionListener ) );
 
         final DotConfConfigurationReader reader = new DotConfConfigurationReader( registry );

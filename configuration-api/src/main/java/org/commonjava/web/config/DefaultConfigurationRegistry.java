@@ -25,8 +25,11 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.web.config.section.ConfigurationSectionListener;
+
 @ApplicationScoped
-public class DefaultConfigurationRegistry implements ConfigurationRegistry
+public class DefaultConfigurationRegistry
+    implements ConfigurationRegistry
 {
     @Inject
     private Collection<ConfigurationListener> listeners;
@@ -35,6 +38,18 @@ public class DefaultConfigurationRegistry implements ConfigurationRegistry
 
     protected DefaultConfigurationRegistry()
     {
+    }
+
+    public DefaultConfigurationRegistry( final Class<?>... types )
+        throws ConfigurationException
+    {
+        this( new DefaultConfigurationListener( types ) );
+    }
+
+    public DefaultConfigurationRegistry( final ConfigurationSectionListener<?>... sectionListeners )
+        throws ConfigurationException
+    {
+        this( new DefaultConfigurationListener( sectionListeners ) );
     }
 
     public DefaultConfigurationRegistry( final ConfigurationListener... listeners )

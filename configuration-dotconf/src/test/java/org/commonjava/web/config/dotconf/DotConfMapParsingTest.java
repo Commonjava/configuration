@@ -32,6 +32,7 @@ import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.DefaultConfigurationRegistry;
 import org.commonjava.web.config.dotconf.fixture.ListEx;
 import org.commonjava.web.config.dotconf.fixture.StringMap;
+import org.commonjava.web.config.section.ConfigurationSectionListener;
 import org.commonjava.web.config.section.MapSectionListener;
 import org.junit.Test;
 
@@ -129,7 +130,7 @@ public class DotConfMapParsingTest
 
         final ConfigurationRegistry registry =
             new DefaultConfigurationRegistry(
-                                              new DefaultConfigurationListener().with( DotConfConfigurationReader.DEFAULT_SECTION,
+                                              new DefaultConfigurationListener().with( ConfigurationSectionListener.DEFAULT_SECTION,
                                                                                        sectionListener ) );
 
         final DotConfConfigurationReader reader = new DotConfConfigurationReader( registry );

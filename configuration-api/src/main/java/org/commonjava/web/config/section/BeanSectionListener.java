@@ -27,12 +27,11 @@ import java.util.Map;
 
 import org.apache.xbean.recipe.ObjectRecipe;
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.ConfigurationSectionListener;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.ConfigNames;
 
 public class BeanSectionListener<T>
-    implements ConfigurationSectionListener<T>
+    implements TypedConfigurationSectionListener<T>
 {
 
     private ObjectRecipe recipe;
@@ -140,6 +139,18 @@ public class BeanSectionListener<T>
     public T getConfiguration()
     {
         return type.cast( recipe.create() );
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "BeanSectionListener [%s]", type.getName() );
+    }
+
+    @Override
+    public Class<T> getConfigurationType()
+    {
+        return type;
     }
 
 }
