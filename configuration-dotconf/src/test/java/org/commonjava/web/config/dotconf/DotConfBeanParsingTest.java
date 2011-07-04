@@ -29,7 +29,6 @@ import org.commonjava.web.config.ConfigurationRegistry;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.DefaultConfigurationRegistry;
 import org.commonjava.web.config.dotconf.fixture.ListEx;
-import org.commonjava.web.config.dotconf.fixture.OrderedMapEx;
 import org.commonjava.web.config.dotconf.fixture.Simpleton;
 import org.commonjava.web.config.dotconf.fixture.SimpletonInt;
 import org.commonjava.web.config.section.BeanSectionListener;
@@ -55,13 +54,7 @@ public class DotConfBeanParsingTest
         final List<String> lines = new ListEx( "one=foo", "two=1" );
         final SimpletonInt check = new SimpletonInt( "foo", 1 );
 
-        checkParse( lines,
-                    new BeanSectionListener<SimpletonInt>( SimpletonInt.class,
-                                                           new OrderedMapEx<String, Class<?>>().with( "one",
-                                                                                                      String.class )
-                                                                                               .with( "two",
-                                                                                                      Integer.class ) ),
-                    check );
+        checkParse( lines, new BeanSectionListener<SimpletonInt>( SimpletonInt.class ), check );
     }
 
     @Test

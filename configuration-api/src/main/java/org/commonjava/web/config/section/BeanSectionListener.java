@@ -16,14 +16,20 @@
  ******************************************************************************/
 package org.commonjava.web.config.section;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.xbean.recipe.ObjectRecipe;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.ConfigurationSectionListener;
+import org.commonjava.web.config.annotation.ConfigName;
+import org.commonjava.web.config.annotation.ConfigNames;
 
 public class BeanSectionListener<T>
     implements ConfigurationSectionListener<T>
@@ -33,17 +39,69 @@ public class BeanSectionListener<T>
 
     private final Class<T> type;
 
-    private final LinkedHashMap<String, Class<?>> constructorArgs;
+    private final List<String> constructorArgs;
+
+    private final Map<String, String> propertyMap = new HashMap<String, String>();
 
     public BeanSectionListener( final Class<T> type )
     {
-        this( type, null );
-    }
-
-    public BeanSectionListener( final Class<T> type, final LinkedHashMap<String, Class<?>> constructorArgs )
-    {
         this.type = type;
-        this.constructorArgs = constructorArgs;
+
+        List<String> ctorArgs = null;
+        for ( final Constructor<?> ctor : type.getConstructors() )
+        {
+            final ConfigNames names = ctor.getAnnotation( ConfigNames.class );
+            if ( names != null )
+            {
+                if ( ctorArgs != null )
+                {
+                    throw new IllegalArgumentException( "Only one constructor can be annotated with @ConfigNames!" );
+                }
+                else if ( names.value().length != ctor.getParameterTypes().length )
+                {
+                    throw new IllegalArgumentException(
+                                                        "Invalid number of configuration names in @ConfigNames annotation. Expected: "
+                                                            + ctor.getParameterTypes().length + ", got: "
+                                                            + names.value().length );
+                }
+
+                ctorArgs = new ArrayList<String>( Arrays.asList( names.value() ) );
+            }
+        }
+
+        for ( final Method meth : type.getMethods() )
+        {
+            final ConfigName cn = meth.getAnnotation( ConfigName.class );
+
+            if ( cn == null )
+            {
+                continue;
+            }
+
+            final String name = meth.getName();
+
+            if ( !( Modifier.isPublic( meth.getModifiers() ) && name.length() > 3 && name.startsWith( "set" ) ) )
+            {
+                throw new IllegalArgumentException(
+                                                    "Invalid configuration method; not accessible, not a setter, or not a valid property name: "
+                                                        + type.getClass()
+                                                              .getName() + "." + name );
+            }
+
+            String propertyName = name.substring( 3 );
+            if ( propertyName.length() > 1 )
+            {
+                propertyName = Character.toLowerCase( propertyName.charAt( 0 ) ) + propertyName.substring( 1 );
+            }
+            else
+            {
+                propertyName = propertyName.toLowerCase();
+            }
+
+            propertyMap.put( cn.value(), propertyName );
+        }
+
+        constructorArgs = ctorArgs;
     }
 
     @Override
@@ -54,16 +112,7 @@ public class BeanSectionListener<T>
 
         if ( constructorArgs != null && !constructorArgs.isEmpty() )
         {
-            final List<String> names = new ArrayList<String>();
-            final List<Class<?>> types = new ArrayList<Class<?>>();
-            for ( final Map.Entry<String, Class<?>> entry : constructorArgs.entrySet() )
-            {
-                names.add( entry.getKey() );
-                types.add( entry.getValue() );
-            }
-
-            recipe.setConstructorArgNames( names );
-            recipe.setConstructorArgTypes( types );
+            recipe.setConstructorArgNames( constructorArgs );
         }
     }
 
@@ -71,7 +120,13 @@ public class BeanSectionListener<T>
     public void parameter( final String name, final String value )
         throws ConfigurationException
     {
-        recipe.setProperty( name, value );
+        String realName = name;
+        if ( ( constructorArgs == null || !constructorArgs.contains( name ) ) && propertyMap.containsKey( name ) )
+        {
+            realName = propertyMap.get( name );
+        }
+
+        recipe.setProperty( realName, value );
     }
 
     @Override

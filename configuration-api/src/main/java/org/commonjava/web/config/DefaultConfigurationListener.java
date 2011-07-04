@@ -19,12 +19,35 @@ package org.commonjava.web.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.commonjava.web.config.annotation.SectionName;
+
 public class DefaultConfigurationListener
     implements ConfigurationListener
 {
 
     private final Map<String, ConfigurationSectionListener<?>> sectionListeners =
         new HashMap<String, ConfigurationSectionListener<?>>();
+
+    public DefaultConfigurationListener()
+    {
+    }
+
+    public DefaultConfigurationListener( final ConfigurationSectionListener<?>... sectionListeners )
+    {
+        for ( final ConfigurationSectionListener<?> sl : sectionListeners )
+        {
+            final SectionName anno = sl.getClass()
+                                       .getAnnotation( SectionName.class );
+
+            if ( anno == null )
+            {
+                throw new IllegalArgumentException( "No @SectionName annotation available for: " + sl.getClass()
+                                                                                                     .getName() );
+            }
+
+            this.sectionListeners.put( anno.value(), sl );
+        }
+    }
 
     @Override
     public Map<String, ConfigurationSectionListener<?>> getSectionListeners()

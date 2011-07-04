@@ -16,6 +16,8 @@
  ******************************************************************************/
 package org.commonjava.web.config.dotconf.fixture;
 
+import org.commonjava.web.config.annotation.ConfigNames;
+
 public class SimpletonInt
 {
 
@@ -28,6 +30,7 @@ public class SimpletonInt
 
     }
 
+    @ConfigNames( { "one", "two" } )
     public SimpletonInt( final String one, final Integer two )
     {
         this.one = one;
