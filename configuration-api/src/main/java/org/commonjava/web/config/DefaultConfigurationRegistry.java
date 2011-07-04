@@ -21,22 +21,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 
-@ApplicationScoped
 public class DefaultConfigurationRegistry
     implements ConfigurationRegistry
 {
-    @Inject
     private Collection<ConfigurationListener> listeners;
 
     private Map<String, ConfigurationSectionListener<?>> sectionMap;
 
-    protected DefaultConfigurationRegistry()
+    public DefaultConfigurationRegistry()
     {
     }
 
@@ -57,6 +51,51 @@ public class DefaultConfigurationRegistry
     {
         this.listeners = Arrays.asList( listeners );
         mapSectionListeners();
+    }
+
+    public DefaultConfigurationRegistry( final Object[] data )
+        throws ConfigurationException
+    {
+        for ( final Object d : data )
+        {
+            if ( d instanceof ConfigurationListener )
+            {
+                with( (ConfigurationListener) d );
+            }
+            else if ( d instanceof ConfigurationSectionListener<?> )
+            {
+                with( (ConfigurationSectionListener<?>) d );
+            }
+            else if ( d instanceof Class<?> )
+            {
+                with( (Class<?>) d );
+            }
+            else
+            {
+                throw new ConfigurationException( "Invalid input for configuration registry: %s", d );
+            }
+        }
+    }
+
+    public DefaultConfigurationRegistry with( final ConfigurationListener listener )
+        throws ConfigurationException
+    {
+        mapListener( listener );
+        return this;
+    }
+
+    public DefaultConfigurationRegistry with( final ConfigurationSectionListener<?> listener )
+        throws ConfigurationException
+    {
+        mapListener( new DefaultConfigurationListener( listener ) );
+        return this;
+    }
+
+    public DefaultConfigurationRegistry with( final Class<?> type )
+        throws ConfigurationException
+    {
+        mapListener( new DefaultConfigurationListener( type ) );
+        return this;
     }
 
     @Override
@@ -109,34 +148,42 @@ public class DefaultConfigurationRegistry
         secListener.parameter( name, value );
     }
 
-    @PostConstruct
-    protected void mapSectionListeners()
+    protected synchronized void mapSectionListeners()
         throws ConfigurationException
     {
-        sectionMap = new HashMap<String, ConfigurationSectionListener<?>>();
-
         if ( listeners != null )
         {
             for ( final ConfigurationListener listener : listeners )
             {
-                final Map<String, ConfigurationSectionListener<?>> parsers = listener.getSectionListeners();
-                for ( final Map.Entry<String, ConfigurationSectionListener<?>> entry : parsers.entrySet() )
-                {
-                    final String section = entry.getKey();
-                    if ( sectionMap.containsKey( section ) )
-                    {
-                        throw new ConfigurationException(
-                                                          "Section collision! More than one ConfigurationParser bound to section: %s\n\t%s\n\t%s",
-                                                          section, sectionMap.get( section ), entry.getValue() );
-                    }
-
-                    sectionMap.put( section, entry.getValue() );
-                }
+                mapListener( listener );
             }
         }
         else
         {
             // TODO: Log to debug level!
+        }
+    }
+
+    private void mapListener( final ConfigurationListener listener )
+        throws ConfigurationException
+    {
+        if ( sectionMap == null )
+        {
+            sectionMap = new HashMap<String, ConfigurationSectionListener<?>>();
+        }
+
+        final Map<String, ConfigurationSectionListener<?>> parsers = listener.getSectionListeners();
+        for ( final Map.Entry<String, ConfigurationSectionListener<?>> entry : parsers.entrySet() )
+        {
+            final String section = entry.getKey();
+            if ( sectionMap.containsKey( section ) )
+            {
+                throw new ConfigurationException(
+                                                  "Section collision! More than one ConfigurationParser bound to section: %s\n\t%s\n\t%s",
+                                                  section, sectionMap.get( section ), entry.getValue() );
+            }
+
+            sectionMap.put( section, entry.getValue() );
         }
     }
 

@@ -69,6 +69,12 @@ public class DotConfConfigurationReader
         this( new DefaultConfigurationRegistry( listeners ) );
     }
 
+    public DotConfConfigurationReader( final Object... data )
+        throws ConfigurationException
+    {
+        this( new DefaultConfigurationRegistry( data ) );
+    }
+
     @Override
     public void loadConfiguration( final InputStream stream )
         throws ConfigurationException
