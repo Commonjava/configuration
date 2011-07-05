@@ -101,4 +101,19 @@ public class DefaultConfigurationListener
         final ConfigurationSectionListener<?> listener = sectionListeners.get( sectionName );
         return listener == null ? null : type.cast( listener.getConfiguration() );
     }
+
+    public <T> T getConfiguration( final Class<T> type )
+        throws ConfigurationException
+    {
+        final SectionName secName = type.getAnnotation( SectionName.class );
+        if ( secName == null )
+        {
+            throw new ConfigurationException(
+                                              "Cannot find @SectionName annotation for: %s. Cannot lookup configuration section.",
+                                              type.getName() );
+        }
+
+        final ConfigurationSectionListener<?> listener = sectionListeners.get( secName.value() );
+        return listener == null ? null : type.cast( listener.getConfiguration() );
+    }
 }
