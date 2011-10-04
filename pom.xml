@@ -40,6 +40,12 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <scm>
+    <connection>scm:git:http://jdcasey@github.com/jdcasey/configuration.git</connection>
+    <developerConnection>scm:git:git@github.com:jdcasey/configuration.git</developerConnection>
+    <url>http://github.com/jdcasey/configuration</url>
+  </scm>
+
   <dependencies>
     <dependency>
       <groupId>javax.enterprise</groupId>
