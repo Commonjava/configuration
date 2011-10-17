@@ -33,8 +33,7 @@ public class DefaultConfigurationListener
         new HashMap<String, ConfigurationSectionListener<?>>();
 
     public DefaultConfigurationListener()
-    {
-    }
+    {}
 
     public DefaultConfigurationListener( final Class<?>... sectionTypes )
         throws ConfigurationException
@@ -52,23 +51,30 @@ public class DefaultConfigurationListener
         {
             if ( type instanceof TypedConfigurationSectionListener )
             {
-                final Class<?> cls = ( (TypedConfigurationSectionListener<?>) type ).getConfigurationType();
+                final Class<?> cls =
+                    ( (TypedConfigurationSectionListener<?>) type ).getConfigurationType();
                 processSectionAnnotation( cls, type );
             }
             else
             {
-                throw new ConfigurationException( "Cannot automatically register section listener: %s", type );
+                throw new ConfigurationException(
+                                                  "Cannot automatically register section listener: %s",
+                                                  type );
             }
         }
     }
 
-    @SuppressWarnings( { "rawtypes", "unchecked" } )
-    private void processSectionAnnotation( final Class cls, final ConfigurationSectionListener listener )
+    @SuppressWarnings( {
+        "rawtypes",
+        "unchecked" } )
+    private void processSectionAnnotation( final Class cls,
+                                           final ConfigurationSectionListener listener )
         throws ConfigurationException
     {
         final SectionName anno = (SectionName) cls.getAnnotation( SectionName.class );
 
-        final String key = anno == null ? ConfigurationSectionListener.DEFAULT_SECTION : anno.value();
+        final String key =
+            anno == null ? ConfigurationSectionListener.DEFAULT_SECTION : anno.value();
         if ( sectionListeners.containsKey( key ) )
         {
             throw new ConfigurationException(
@@ -76,7 +82,11 @@ public class DefaultConfigurationListener
                                               key, sectionListeners.get( key ), cls.getName() );
         }
 
-        this.sectionListeners.put( anno.value(), listener == null ? new BeanSectionListener( cls ) : listener );
+        String sectionName =
+            anno == null ? ConfigurationSectionListener.DEFAULT_SECTION : anno.value();
+
+        this.sectionListeners.put( sectionName, listener == null ? new BeanSectionListener( cls )
+                        : listener );
     }
 
     @Override
@@ -85,7 +95,8 @@ public class DefaultConfigurationListener
         return sectionListeners;
     }
 
-    public DefaultConfigurationListener with( final String sectionName, final ConfigurationSectionListener<?> listener )
+    public DefaultConfigurationListener with( final String sectionName,
+                                              final ConfigurationSectionListener<?> listener )
     {
         sectionListeners.put( sectionName, listener );
         return this;
@@ -94,8 +105,7 @@ public class DefaultConfigurationListener
     @Override
     public void configurationComplete()
         throws ConfigurationException
-    {
-    }
+    {}
 
     public <T> T getConfiguration( final String sectionName, final Class<T> type )
     {

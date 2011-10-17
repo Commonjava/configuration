@@ -54,7 +54,7 @@ public class DefaultConfigurationRegistry
         mapSectionListeners();
     }
 
-    public DefaultConfigurationRegistry( final Object[] data )
+    public DefaultConfigurationRegistry( final Object... data )
         throws ConfigurationException
     {
         for ( final Object d : data )

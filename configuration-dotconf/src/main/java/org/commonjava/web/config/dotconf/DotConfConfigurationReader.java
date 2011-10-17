@@ -26,7 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.ConfigurationListener;
@@ -36,7 +35,6 @@ import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.DefaultConfigurationRegistry;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 
-@Named( ".conf" )
 public class DotConfConfigurationReader
     implements ConfigurationReader
 {
@@ -61,7 +59,8 @@ public class DotConfConfigurationReader
     public DotConfConfigurationReader( final ConfigurationSectionListener<?>... sectionListeners )
         throws ConfigurationException
     {
-        this( new DefaultConfigurationRegistry( new DefaultConfigurationListener( sectionListeners ) ) );
+        this(
+              new DefaultConfigurationRegistry( new DefaultConfigurationListener( sectionListeners ) ) );
     }
 
     public DotConfConfigurationReader( final ConfigurationListener... listeners )
@@ -87,7 +86,8 @@ public class DotConfConfigurationReader
         }
         catch ( final IOException e )
         {
-            throw new ConfigurationException( "Failed to read configuration. Error: %s", e, e.getMessage() );
+            throw new ConfigurationException( "Failed to read configuration. Error: %s", e,
+                                              e.getMessage() );
         }
 
         String sectionName = ConfigurationSectionListener.DEFAULT_SECTION;
