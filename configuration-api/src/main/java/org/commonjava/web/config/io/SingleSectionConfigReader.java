@@ -52,15 +52,14 @@ public class SingleSectionConfigReader
     public void loadConfiguration( final InputStream stream )
         throws ConfigurationException
     {
-        Properties props = new Properties();
+        final Properties props = new Properties();
         try
         {
             props.load( stream );
         }
         catch ( final IOException e )
         {
-            throw new ConfigurationException( "Failed to read configuration. Error: %s", e,
-                                              e.getMessage() );
+            throw new ConfigurationException( "Failed to read configuration. Error: %s", e, e.getMessage() );
         }
 
         if ( !dispatch.sectionStarted( DEFAULT_SECTION ) )
@@ -70,7 +69,7 @@ public class SingleSectionConfigReader
 
         for ( final Object k : props.keySet() )
         {
-            String key = (String) k;
+            final String key = (String) k;
             dispatch.parameter( DEFAULT_SECTION, key, props.getProperty( key ) );
         }
 

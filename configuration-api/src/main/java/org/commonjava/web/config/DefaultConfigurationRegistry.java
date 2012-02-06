@@ -15,6 +15,7 @@
  ******************************************************************************/
 package org.commonjava.web.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,12 +26,13 @@ import org.commonjava.web.config.section.ConfigurationSectionListener;
 public class DefaultConfigurationRegistry
     implements ConfigurationRegistry
 {
-    private Collection<ConfigurationListener> listeners;
+    private final Collection<ConfigurationListener> listeners;
 
     private Map<String, ConfigurationSectionListener<?>> sectionMap;
 
     public DefaultConfigurationRegistry()
     {
+        listeners = new ArrayList<ConfigurationListener>();
     }
 
     public DefaultConfigurationRegistry( final Class<?>... types )
@@ -55,6 +57,7 @@ public class DefaultConfigurationRegistry
     public DefaultConfigurationRegistry( final Object... data )
         throws ConfigurationException
     {
+        listeners = new ArrayList<ConfigurationListener>();
         for ( final Object d : data )
         {
             if ( d instanceof ConfigurationListener )
@@ -79,6 +82,7 @@ public class DefaultConfigurationRegistry
     public DefaultConfigurationRegistry with( final ConfigurationListener listener )
         throws ConfigurationException
     {
+        listeners.add( listener );
         mapListener( listener );
         return this;
     }
@@ -86,14 +90,18 @@ public class DefaultConfigurationRegistry
     public DefaultConfigurationRegistry with( final ConfigurationSectionListener<?> listener )
         throws ConfigurationException
     {
-        mapListener( new DefaultConfigurationListener( listener ) );
+        final DefaultConfigurationListener dcl = new DefaultConfigurationListener( listener );
+        listeners.add( dcl );
+        mapListener( dcl );
         return this;
     }
 
     public DefaultConfigurationRegistry with( final Class<?> type )
         throws ConfigurationException
     {
-        mapListener( new DefaultConfigurationListener( type ) );
+        final DefaultConfigurationListener dcl = new DefaultConfigurationListener( type );
+        listeners.add( dcl );
+        mapListener( dcl );
         return this;
     }
 
