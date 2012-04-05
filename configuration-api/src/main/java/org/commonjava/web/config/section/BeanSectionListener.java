@@ -53,15 +53,14 @@ public class BeanSectionListener<T>
             {
                 if ( ctorArgs != null )
                 {
-                    throw new IllegalArgumentException(
-                                                        "Only one constructor can be annotated with @ConfigNames!" );
+                    throw new IllegalArgumentException( "Only one constructor can be annotated with @ConfigNames!" );
                 }
                 else if ( names.value().length != ctor.getParameterTypes().length )
                 {
                     throw new IllegalArgumentException(
                                                         "Invalid number of configuration names in @ConfigNames annotation. Expected: "
-                                                            + ctor.getParameterTypes().length
-                                                            + ", got: " + names.value().length );
+                                                            + ctor.getParameterTypes().length + ", got: "
+                                                            + names.value().length );
                 }
 
                 ctorArgs = new ArrayList<String>( Arrays.asList( names.value() ) );
@@ -84,14 +83,14 @@ public class BeanSectionListener<T>
             {
                 throw new IllegalArgumentException(
                                                     "Invalid configuration method; not accessible, not a setter, or not a valid property name: "
-                                                        + type.getClass().getName() + "." + name );
+                                                        + type.getClass()
+                                                              .getName() + "." + name );
             }
 
             String propertyName = name.substring( 3 );
             if ( propertyName.length() > 1 )
             {
-                propertyName =
-                    Character.toLowerCase( propertyName.charAt( 0 ) ) + propertyName.substring( 1 );
+                propertyName = Character.toLowerCase( propertyName.charAt( 0 ) ) + propertyName.substring( 1 );
             }
             else
             {
@@ -121,8 +120,7 @@ public class BeanSectionListener<T>
         throws ConfigurationException
     {
         String realName = name;
-        if ( ( constructorArgs == null || !constructorArgs.contains( name ) )
-            && propertyMap.containsKey( name ) )
+        if ( ( constructorArgs == null || !constructorArgs.contains( name ) ) && propertyMap.containsKey( name ) )
         {
             realName = propertyMap.get( name );
         }
@@ -140,7 +138,7 @@ public class BeanSectionListener<T>
     @Override
     public T getConfiguration()
     {
-        return type.cast( recipe.create() );
+        return recipe == null ? null : type.cast( recipe.create() );
     }
 
     @Override
