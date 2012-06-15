@@ -25,7 +25,7 @@
   
   <groupId>org.commonjava.util</groupId>
   <artifactId>configuration</artifactId>
-  <version>0.3</version>
+  <version>0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Consolidated Configuration Support</name>
