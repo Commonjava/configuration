@@ -37,14 +37,31 @@ public class BeanSectionListener<T>
 
     private final Class<T> type;
 
-    private final List<String> constructorArgs;
+    private final T instance;
+
+    private final List<String> constructorArgs = new ArrayList<String>();
 
     private final Map<String, String> propertyMap = new HashMap<String, String>();
 
     public BeanSectionListener( final Class<T> type )
     {
         this.type = type;
+        this.instance = null;
 
+        doDiscovery( type );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    public BeanSectionListener( final T instance )
+    {
+        this.type = (Class<T>) instance.getClass();
+        this.instance = instance;
+
+        doDiscovery( type );
+    }
+
+    private void doDiscovery( final Class<T> type )
+    {
         List<String> ctorArgs = null;
         for ( final Constructor<?> ctor : type.getConstructors() )
         {
@@ -100,7 +117,11 @@ public class BeanSectionListener<T>
             propertyMap.put( cn.value(), propertyName );
         }
 
-        constructorArgs = ctorArgs;
+        constructorArgs.clear();
+        if ( ctorArgs != null && !ctorArgs.isEmpty() )
+        {
+            constructorArgs.addAll( ctorArgs );
+        }
     }
 
     @Override
@@ -138,7 +159,20 @@ public class BeanSectionListener<T>
     @Override
     public T getConfiguration()
     {
-        return recipe == null ? null : type.cast( recipe.create() );
+        if ( recipe == null )
+        {
+            return null;
+        }
+
+        if ( instance == null )
+        {
+            return type.cast( recipe.create() );
+        }
+        else
+        {
+            recipe.setProperties( instance );
+            return instance;
+        }
     }
 
     @Override

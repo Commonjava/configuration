@@ -22,4 +22,5 @@ public interface ConfigurationReader
 
     void loadConfiguration( InputStream stream )
         throws ConfigurationException;
+
 }

@@ -64,19 +64,23 @@ public class DefaultConfigurationListener
     private void processSectionAnnotation( final Class cls, final ConfigurationSectionListener listener )
         throws ConfigurationException
     {
-        final SectionName anno = (SectionName) cls.getAnnotation( SectionName.class );
+        final String key = ConfigUtils.getSectionName( cls );
+        registerListener( key, listener == null ? new BeanSectionListener( cls ) : listener );
+    }
 
-        final String key = anno == null ? ConfigurationSectionListener.DEFAULT_SECTION : anno.value();
-        if ( sectionListeners.containsKey( key ) )
+    private void registerListener( final String key,
+                                   @SuppressWarnings( "rawtypes" ) final ConfigurationSectionListener listener )
+        throws ConfigurationException
+    {
+        final ConfigurationSectionListener<?> existing = sectionListeners.get( key );
+        if ( existing != null && listener != existing )
         {
             throw new ConfigurationException(
                                               "Section collision! More than one ConfigurationParser bound to section: %s\n\t%s\n\t%s",
-                                              key, sectionListeners.get( key ), cls.getName() );
+                                              key, sectionListeners.get( key ), listener );
         }
 
-        final String sectionName = anno == null ? ConfigurationSectionListener.DEFAULT_SECTION : anno.value();
-
-        this.sectionListeners.put( sectionName, listener == null ? new BeanSectionListener( cls ) : listener );
+        this.sectionListeners.put( key, listener );
     }
 
     @Override
@@ -85,9 +89,56 @@ public class DefaultConfigurationListener
         return sectionListeners;
     }
 
-    public DefaultConfigurationListener with( final String sectionName, final ConfigurationSectionListener<?> listener )
+    public DefaultConfigurationListener with( final ConfigurationSectionListener<?>... listeners )
+        throws ConfigurationException
     {
-        sectionListeners.put( sectionName, listener );
+        for ( final ConfigurationSectionListener<?> listener : listeners )
+        {
+            processSectionAnnotation( listener.getClass(), listener );
+        }
+
+        return this;
+    }
+
+    public DefaultConfigurationListener with( final ConfigurationSectionListener<?> listener )
+        throws ConfigurationException
+    {
+        return with( null, listener );
+    }
+
+    public DefaultConfigurationListener with( final String sectionName, final ConfigurationSectionListener<?> listener )
+        throws ConfigurationException
+    {
+        final String key = sectionName == null ? ConfigUtils.getSectionName( listener.getClass() ) : sectionName;
+        registerListener( key, listener );
+        return this;
+    }
+
+    public <T> DefaultConfigurationListener with( final Class<T> beanCls )
+        throws ConfigurationException
+    {
+        return with( null, beanCls );
+    }
+
+    public <T> DefaultConfigurationListener with( final String sectionName, final Class<T> beanCls )
+        throws ConfigurationException
+    {
+        final String key = sectionName == null ? ConfigUtils.getSectionName( beanCls ) : sectionName;
+        registerListener( key, new BeanSectionListener<T>( beanCls ) );
+        return this;
+    }
+
+    public <T> DefaultConfigurationListener with( final T bean )
+        throws ConfigurationException
+    {
+        return with( null, bean );
+    }
+
+    public <T> DefaultConfigurationListener with( final String sectionName, final T bean )
+        throws ConfigurationException
+    {
+        final String key = sectionName == null ? ConfigUtils.getSectionName( bean.getClass() ) : sectionName;
+        registerListener( key, new BeanSectionListener<T>( bean ) );
         return this;
     }
 
