@@ -18,6 +18,7 @@ package org.commonjava.web.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.BeanSectionListener;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -26,6 +27,8 @@ import org.commonjava.web.config.section.TypedConfigurationSectionListener;
 public class DefaultConfigurationListener
     implements ConfigurationListener
 {
+
+    private final Logger logger = new Logger( getClass() );
 
     private final Map<String, ConfigurationSectionListener<?>> sectionListeners =
         new HashMap<String, ConfigurationSectionListener<?>>();
@@ -110,6 +113,7 @@ public class DefaultConfigurationListener
         throws ConfigurationException
     {
         final String key = sectionName == null ? ConfigUtils.getSectionName( listener.getClass() ) : sectionName;
+        logger.info( "+section (listener): %s (%s)", key, listener );
         registerListener( key, listener );
         return this;
     }
@@ -124,6 +128,7 @@ public class DefaultConfigurationListener
         throws ConfigurationException
     {
         final String key = sectionName == null ? ConfigUtils.getSectionName( beanCls ) : sectionName;
+        logger.info( "+section (class): %s (%s)", key, beanCls.getName() );
         registerListener( key, new BeanSectionListener<T>( beanCls ) );
         return this;
     }
@@ -138,6 +143,7 @@ public class DefaultConfigurationListener
         throws ConfigurationException
     {
         final String key = sectionName == null ? ConfigUtils.getSectionName( bean.getClass() ) : sectionName;
+        logger.info( "+section (bean): %s (%s)", key, bean );
         registerListener( key, new BeanSectionListener<T>( bean ) );
         return this;
     }

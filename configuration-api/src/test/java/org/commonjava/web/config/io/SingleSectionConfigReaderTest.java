@@ -23,32 +23,41 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.log4j.Level;
+import org.commonjava.util.logging.Log4jUtil;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.fixture.TestChild;
 import org.commonjava.web.config.fixture.TestRoot;
 import org.commonjava.web.config.section.BeanSectionListener;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SingleSectionConfigReaderTest
 {
 
+    @BeforeClass
+    public static void logging()
+    {
+        Log4jUtil.configure( Level.DEBUG );
+    }
+
     @Test
     public void simpleBeanConfiguration()
         throws ConfigurationException, IOException
     {
-        BeanSectionListener<TestRoot> listener = new BeanSectionListener<TestRoot>( TestRoot.class );
-        SingleSectionConfigReader reader = new SingleSectionConfigReader( listener );
+        final BeanSectionListener<TestRoot> listener = new BeanSectionListener<TestRoot>( TestRoot.class );
+        final SingleSectionConfigReader reader = new SingleSectionConfigReader( listener );
 
-        Properties p = new Properties();
+        final Properties p = new Properties();
         p.setProperty( "key.one", "valueOne" );
         p.setProperty( "key.two", "valueTwo" );
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         p.store( baos, "" );
 
         reader.loadConfiguration( new ByteArrayInputStream( baos.toByteArray() ) );
 
-        TestRoot result = listener.getConfiguration();
+        final TestRoot result = listener.getConfiguration();
 
         assertThat( result.getKeyOne(), equalTo( "valueOne" ) );
         assertThat( result.getKeyTwo(), equalTo( "valueTwo" ) );
@@ -58,22 +67,21 @@ public class SingleSectionConfigReaderTest
     public void inheritedBeanConfiguration()
         throws ConfigurationException, IOException
     {
-        BeanSectionListener<TestChild> listener =
-            new BeanSectionListener<TestChild>( TestChild.class );
+        final BeanSectionListener<TestChild> listener = new BeanSectionListener<TestChild>( TestChild.class );
 
-        SingleSectionConfigReader reader = new SingleSectionConfigReader( listener );
+        final SingleSectionConfigReader reader = new SingleSectionConfigReader( listener );
 
-        Properties p = new Properties();
+        final Properties p = new Properties();
         p.setProperty( "key.one", "valueOne" );
         p.setProperty( "key.two", "valueTwo" );
         p.setProperty( "key.three", "valueThree" );
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         p.store( baos, "" );
 
         reader.loadConfiguration( new ByteArrayInputStream( baos.toByteArray() ) );
 
-        TestChild result = listener.getConfiguration();
+        final TestChild result = listener.getConfiguration();
 
         assertThat( result.getKeyOne(), equalTo( "valueOne" ) );
         assertThat( result.getKeyTwo(), equalTo( "valueTwo" ) );

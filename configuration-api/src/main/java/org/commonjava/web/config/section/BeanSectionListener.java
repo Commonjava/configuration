@@ -122,18 +122,18 @@ public class BeanSectionListener<T>
         {
             constructorArgs.addAll( ctorArgs );
         }
+
+        recipe = new ObjectRecipe( type );
+        if ( constructorArgs != null && !constructorArgs.isEmpty() )
+        {
+            recipe.setConstructorArgNames( constructorArgs );
+        }
     }
 
     @Override
     public void sectionStarted( final String name )
         throws ConfigurationException
     {
-        recipe = new ObjectRecipe( type );
-
-        if ( constructorArgs != null && !constructorArgs.isEmpty() )
-        {
-            recipe.setConstructorArgNames( constructorArgs );
-        }
     }
 
     @Override
@@ -159,20 +159,14 @@ public class BeanSectionListener<T>
     @Override
     public T getConfiguration()
     {
-        if ( recipe == null )
-        {
-            return null;
-        }
-
-        if ( instance == null )
-        {
-            return type.cast( recipe.create() );
-        }
-        else
+        if ( instance != null )
         {
             recipe.setProperties( instance );
+
             return instance;
         }
+
+        return type.cast( recipe.create() );
     }
 
     @Override

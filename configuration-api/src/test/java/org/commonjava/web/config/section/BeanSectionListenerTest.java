@@ -18,19 +18,28 @@ package org.commonjava.web.config.section;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.apache.log4j.Level;
+import org.commonjava.util.logging.Log4jUtil;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.fixture.TestChild;
 import org.commonjava.web.config.fixture.TestRoot;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class BeanSectionListenerTest
 {
 
+    @BeforeClass
+    public static void logging()
+    {
+        Log4jUtil.configure( Level.DEBUG );
+    }
+
     @Test
     public void simpleBeanConfiguration()
         throws ConfigurationException
     {
-        BeanSectionListener<TestRoot> listener = new BeanSectionListener<TestRoot>( TestRoot.class );
+        final BeanSectionListener<TestRoot> listener = new BeanSectionListener<TestRoot>( TestRoot.class );
         listener.sectionStarted( ConfigurationSectionListener.DEFAULT_SECTION );
 
         listener.parameter( "key.one", "valueOne" );
@@ -38,7 +47,7 @@ public class BeanSectionListenerTest
 
         listener.sectionComplete( ConfigurationSectionListener.DEFAULT_SECTION );
 
-        TestRoot result = listener.getConfiguration();
+        final TestRoot result = listener.getConfiguration();
 
         assertThat( result.getKeyOne(), equalTo( "valueOne" ) );
         assertThat( result.getKeyTwo(), equalTo( "valueTwo" ) );
@@ -48,8 +57,7 @@ public class BeanSectionListenerTest
     public void inheritedBeanConfiguration()
         throws ConfigurationException
     {
-        BeanSectionListener<TestChild> listener =
-            new BeanSectionListener<TestChild>( TestChild.class );
+        final BeanSectionListener<TestChild> listener = new BeanSectionListener<TestChild>( TestChild.class );
         listener.sectionStarted( ConfigurationSectionListener.DEFAULT_SECTION );
 
         listener.parameter( "key.one", "valueOne" );
@@ -58,7 +66,7 @@ public class BeanSectionListenerTest
 
         listener.sectionComplete( ConfigurationSectionListener.DEFAULT_SECTION );
 
-        TestChild result = listener.getConfiguration();
+        final TestChild result = listener.getConfiguration();
 
         assertThat( result.getKeyOne(), equalTo( "valueOne" ) );
         assertThat( result.getKeyTwo(), equalTo( "valueTwo" ) );
