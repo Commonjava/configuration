@@ -16,11 +16,15 @@
 package org.commonjava.web.config;
 
 import java.io.InputStream;
+import java.util.Properties;
 
 public interface ConfigurationReader
 {
 
     void loadConfiguration( InputStream stream )
+        throws ConfigurationException;
+
+    void loadConfiguration( InputStream stream, Properties properties )
         throws ConfigurationException;
 
 }

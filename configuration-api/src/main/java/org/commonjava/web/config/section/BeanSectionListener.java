@@ -94,7 +94,7 @@ public class BeanSectionListener<T>
             }
 
             final String name = meth.getName();
-            System.out.println( "Adding configuration property: " + name );
+            //            System.out.println( "Adding configuration property: " + name );
 
             if ( !( Modifier.isPublic( meth.getModifiers() ) && name.length() > 3 && name.startsWith( "set" ) ) )
             {

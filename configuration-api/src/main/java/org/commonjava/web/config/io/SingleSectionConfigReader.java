@@ -23,6 +23,9 @@ import java.util.Properties;
 
 import javax.inject.Named;
 
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.ConfigurationReader;
 import org.commonjava.web.config.ConfigurationRegistry;
@@ -52,6 +55,13 @@ public class SingleSectionConfigReader
     public void loadConfiguration( final InputStream stream )
         throws ConfigurationException
     {
+        loadConfiguration( stream, System.getProperties() );
+    }
+
+    @Override
+    public void loadConfiguration( final InputStream stream, final Properties properties )
+        throws ConfigurationException
+    {
         final Properties props = new Properties();
         try
         {
@@ -67,9 +77,23 @@ public class SingleSectionConfigReader
             return;
         }
 
+        final StringSearchInterpolator interp = new StringSearchInterpolator();
+        interp.addValueSource( new PropertiesBasedValueSource( properties ) );
+
         for ( final Object k : props.keySet() )
         {
             final String key = (String) k;
+            String value = props.getProperty( key );
+            try
+            {
+                value = interp.interpolate( value );
+            }
+            catch ( final InterpolationException e )
+            {
+                throw new ConfigurationException( "Failed to resolve expressions in configuration '%s' (raw value: '%s'). Reason: %s", e, key, value,
+                                                  e.getMessage() );
+            }
+
             dispatch.parameter( DEFAULT_SECTION, key, props.getProperty( key ) );
         }
 

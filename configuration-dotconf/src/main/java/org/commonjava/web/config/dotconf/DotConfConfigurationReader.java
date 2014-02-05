@@ -20,11 +20,15 @@ import static org.apache.commons.io.IOUtils.readLines;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.ConfigurationListener;
 import org.commonjava.web.config.ConfigurationReader;
@@ -57,8 +61,7 @@ public class DotConfConfigurationReader
     public DotConfConfigurationReader( final ConfigurationSectionListener<?>... sectionListeners )
         throws ConfigurationException
     {
-        this(
-              new DefaultConfigurationRegistry( new DefaultConfigurationListener( sectionListeners ) ) );
+        this( new DefaultConfigurationRegistry( new DefaultConfigurationListener( sectionListeners ) ) );
     }
 
     public DotConfConfigurationReader( final ConfigurationListener... listeners )
@@ -77,6 +80,13 @@ public class DotConfConfigurationReader
     public void loadConfiguration( final InputStream stream )
         throws ConfigurationException
     {
+        loadConfiguration( stream, System.getProperties() );
+    }
+
+    @Override
+    public void loadConfiguration( final InputStream stream, final Properties properties )
+        throws ConfigurationException
+    {
         List<String> lines;
         try
         {
@@ -84,12 +94,15 @@ public class DotConfConfigurationReader
         }
         catch ( final IOException e )
         {
-            throw new ConfigurationException( "Failed to read configuration. Error: %s", e,
-                                              e.getMessage() );
+            throw new ConfigurationException( "Failed to read configuration. Error: %s", e, e.getMessage() );
         }
 
         String sectionName = ConfigurationSectionListener.DEFAULT_SECTION;
         boolean processSection = dispatch.sectionStarted( sectionName );
+
+        final StringSearchInterpolator interp = new StringSearchInterpolator();
+        interp.addValueSource( new PropertiesBasedValueSource( properties ) );
+
         for ( final String line : lines )
         {
             final String trimmed = line.trim();
@@ -110,7 +123,18 @@ public class DotConfConfigurationReader
                 if ( matcher.matches() )
                 {
                     final String key = matcher.group( 1 );
-                    final String value = matcher.group( 2 );
+                    String value = matcher.group( 2 );
+
+                    try
+                    {
+                        value = interp.interpolate( value );
+                    }
+                    catch ( final InterpolationException e )
+                    {
+                        throw new ConfigurationException( "Failed to resolve expressions in configuration '%s' (raw value: '%s'). Reason: %s", e,
+                                                          key, value, e.getMessage() );
+                    }
+
                     dispatch.parameter( sectionName, key, value );
                 }
             }
