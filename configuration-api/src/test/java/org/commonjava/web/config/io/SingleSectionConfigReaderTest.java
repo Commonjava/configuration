@@ -23,23 +23,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.log4j.Level;
-import org.commonjava.util.logging.Log4jUtil;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.fixture.TestChild;
 import org.commonjava.web.config.fixture.TestRoot;
 import org.commonjava.web.config.section.BeanSectionListener;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SingleSectionConfigReaderTest
 {
-
-    @BeforeClass
-    public static void logging()
-    {
-        Log4jUtil.configure( Level.DEBUG );
-    }
 
     @Test
     public void simpleBeanConfiguration()

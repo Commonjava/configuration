@@ -18,20 +18,20 @@ package org.commonjava.web.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.BeanSectionListener;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 import org.commonjava.web.config.section.TypedConfigurationSectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultConfigurationListener
     implements ConfigurationListener
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final Map<String, ConfigurationSectionListener<?>> sectionListeners =
-        new HashMap<String, ConfigurationSectionListener<?>>();
+    private final Map<String, ConfigurationSectionListener<?>> sectionListeners = new HashMap<String, ConfigurationSectionListener<?>>();
 
     public DefaultConfigurationListener()
     {
@@ -58,7 +58,7 @@ public class DefaultConfigurationListener
             }
             else
             {
-                throw new ConfigurationException( "Cannot automatically register section listener: %s", type );
+                throw new ConfigurationException( "Cannot automatically register section listener: {}", type );
             }
         }
     }
@@ -71,16 +71,14 @@ public class DefaultConfigurationListener
         registerListener( key, listener == null ? new BeanSectionListener( cls ) : listener );
     }
 
-    private void registerListener( final String key,
-                                   @SuppressWarnings( "rawtypes" ) final ConfigurationSectionListener listener )
+    private void registerListener( final String key, @SuppressWarnings( "rawtypes" ) final ConfigurationSectionListener listener )
         throws ConfigurationException
     {
         final ConfigurationSectionListener<?> existing = sectionListeners.get( key );
         if ( existing != null && listener != existing )
         {
-            throw new ConfigurationException(
-                                              "Section collision! More than one ConfigurationParser bound to section: %s\n\t%s\n\t%s",
-                                              key, sectionListeners.get( key ), listener );
+            throw new ConfigurationException( "Section collision! More than one ConfigurationParser bound to section: {}\n\t{}\n\t{}", key,
+                                              sectionListeners.get( key ), listener );
         }
 
         this.sectionListeners.put( key, listener );
@@ -113,7 +111,7 @@ public class DefaultConfigurationListener
         throws ConfigurationException
     {
         final String key = sectionName == null ? ConfigUtils.getSectionName( listener.getClass() ) : sectionName;
-        logger.info( "+section (listener): %s (%s)", key, listener );
+        logger.info( "+section (listener): {} ({})", key, listener );
         registerListener( key, listener );
         return this;
     }
@@ -128,7 +126,7 @@ public class DefaultConfigurationListener
         throws ConfigurationException
     {
         final String key = sectionName == null ? ConfigUtils.getSectionName( beanCls ) : sectionName;
-        logger.info( "+section (class): %s (%s)", key, beanCls.getName() );
+        logger.info( "+section (class): {} ({})", key, beanCls.getName() );
         registerListener( key, new BeanSectionListener<T>( beanCls ) );
         return this;
     }
@@ -143,7 +141,7 @@ public class DefaultConfigurationListener
         throws ConfigurationException
     {
         final String key = sectionName == null ? ConfigUtils.getSectionName( bean.getClass() ) : sectionName;
-        logger.info( "+section (bean): %s (%s)", key, bean );
+        logger.info( "+section (bean): {} ({})", key, bean );
         registerListener( key, new BeanSectionListener<T>( bean ) );
         return this;
     }
@@ -166,9 +164,7 @@ public class DefaultConfigurationListener
         final SectionName secName = type.getAnnotation( SectionName.class );
         if ( secName == null )
         {
-            throw new ConfigurationException(
-                                              "Cannot find @SectionName annotation for: %s. Cannot lookup configuration section.",
-                                              type.getName() );
+            throw new ConfigurationException( "Cannot find @SectionName annotation for: {}. Cannot lookup configuration section.", type.getName() );
         }
 
         final ConfigurationSectionListener<?> listener = sectionListeners.get( secName.value() );

@@ -18,22 +18,13 @@ package org.commonjava.web.config.section;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.apache.log4j.Level;
-import org.commonjava.util.logging.Log4jUtil;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.fixture.TestChild;
 import org.commonjava.web.config.fixture.TestRoot;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class BeanSectionListenerTest
 {
-
-    @BeforeClass
-    public static void logging()
-    {
-        Log4jUtil.configure( Level.DEBUG );
-    }
 
     @Test
     public void simpleBeanConfiguration()
