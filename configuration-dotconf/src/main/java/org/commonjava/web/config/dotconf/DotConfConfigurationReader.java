@@ -49,7 +49,7 @@ public class DotConfConfigurationReader
     public DotConfConfigurationReader( final ConfigurationRegistry dispatch )
     {
         this.dispatch = dispatch;
-        parameter = Pattern.compile( "\\s*([-._a-zA-Z0-9]+)\\s*[:=]\\s*([^\\s#]+)(\\s*#.*)?" );
+        parameter = Pattern.compile( "\\s*([^#]+)\\s*[:=]\\s*([^\\s#]+)(\\s*#.*)?" );
     }
 
     public DotConfConfigurationReader( final Class<?>... types )

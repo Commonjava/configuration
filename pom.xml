@@ -25,7 +25,7 @@
   
   <groupId>org.commonjava.util</groupId>
   <artifactId>configuration</artifactId>
-  <version>0.7-SNAPSHOT</version>
+  <version>0.6.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Consolidated Configuration Support</name>
@@ -84,7 +84,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>8</version>
+        <version>9-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
