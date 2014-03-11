@@ -53,7 +53,7 @@ public class ConfigurationException
                 final String original = formattedMessage;
                 try
                 {
-                    formattedMessage = String.format( format, params );
+                    formattedMessage = String.format( format.replaceAll( "\\{\\}", "%s" ), params );
                 }
                 catch ( final Error e )
                 {
