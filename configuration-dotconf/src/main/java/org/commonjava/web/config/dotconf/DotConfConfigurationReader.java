@@ -49,7 +49,7 @@ public class DotConfConfigurationReader
     public DotConfConfigurationReader( final ConfigurationRegistry dispatch )
     {
         this.dispatch = dispatch;
-        parameter = Pattern.compile( "\\s*([^#]+)\\s*[:=]\\s*([^\\s#]+)(\\s*#.*)?" );
+        parameter = Pattern.compile( "\\s*([^#]+)\\s*[:=]\\s*([^#]+)(\\s*#.*)?" );
     }
 
     public DotConfConfigurationReader( final Class<?>... types )
@@ -103,9 +103,16 @@ public class DotConfConfigurationReader
         final StringSearchInterpolator interp = new StringSearchInterpolator();
         interp.addValueSource( new PropertiesBasedValueSource( properties ) );
 
+        String continuedKey = null;
+        StringBuilder continuedVal = null;
         for ( final String line : lines )
         {
             final String trimmed = line.trim();
+            if ( trimmed.startsWith( "#" ) )
+            {
+                continue;
+            }
+
             if ( trimmed.startsWith( "[" ) && trimmed.endsWith( "]" ) )
             {
                 if ( trimmed.length() == 2 )
@@ -119,23 +126,58 @@ public class DotConfConfigurationReader
             }
             else if ( processSection )
             {
-                final Matcher matcher = parameter.matcher( line );
-                if ( matcher.matches() )
+                if ( continuedKey != null )
                 {
-                    final String key = matcher.group( 1 );
-                    String value = matcher.group( 2 );
-
-                    try
+                    if ( trimmed.endsWith( "\\" ) )
                     {
-                        value = interp.interpolate( value );
+                        continuedVal.append( trimmed.substring( 0, trimmed.length() - 1 ) );
                     }
-                    catch ( final InterpolationException e )
+                    else
                     {
-                        throw new ConfigurationException( "Failed to resolve expressions in configuration '%s' (raw value: '%s'). Reason: %s", e,
-                                                          key, value, e.getMessage() );
-                    }
+                        continuedVal.append( trimmed );
 
-                    dispatch.parameter( sectionName, key, value );
+                        try
+                        {
+                            final String value = interp.interpolate( continuedVal.toString() );
+                            dispatch.parameter( sectionName, continuedKey, value );
+                            continuedKey = null;
+                            continuedVal = null;
+                        }
+                        catch ( final InterpolationException e )
+                        {
+                            throw new ConfigurationException( "Failed to resolve expressions in configuration '%s' (raw value: '%s'). Reason: %s", e,
+                                                              continuedKey, continuedVal, e.getMessage() );
+                        }
+                    }
+                }
+                else
+                {
+                    final Matcher matcher = parameter.matcher( line );
+                    if ( matcher.matches() )
+                    {
+                        final String key = matcher.group( 1 );
+                        String value = matcher.group( 2 )
+                                              .trim();
+
+                        if ( value.endsWith( "\\" ) )
+                        {
+                            continuedKey = key;
+                            continuedVal = new StringBuilder( value.substring( 0, value.length() - 1 ) );
+                            continue;
+                        }
+
+                        try
+                        {
+                            value = interp.interpolate( value );
+                        }
+                        catch ( final InterpolationException e )
+                        {
+                            throw new ConfigurationException( "Failed to resolve expressions in configuration '%s' (raw value: '%s'). Reason: %s", e,
+                                                              key, value, e.getMessage() );
+                        }
+
+                        dispatch.parameter( sectionName, key, value );
+                    }
                 }
             }
         }

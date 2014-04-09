@@ -42,8 +42,8 @@ public class DotConfConfigurationReaderTest
         throws Exception
     {
         final List<String> lines =
-            new ListEx( "[mappings]", "newUser: templates/custom-newUser", "changePassword: templates/change-password",
-                        "", "", "[object]", "one=foo", "two: 2" );
+            new ListEx( "[mappings]", "newUser: templates/custom-newUser", "changePassword: templates/change-password", "", "", "[object]",
+                        "one=foo", "two: 2" );
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writeLines( lines, LINE_SEPARATOR, baos );
@@ -61,8 +61,7 @@ public class DotConfConfigurationReaderTest
                                            .get( "newUser" ), equalTo( "templates/custom-newUser" ) );
         assertThat( (String) configListener.getConfiguration( "mappings", Map.class )
                                            .get( "changePassword" ), equalTo( "templates/change-password" ) );
-        assertThat( configListener.getConfiguration( "object", SimpletonInt.class ), equalTo( new SimpletonInt( "foo",
-                                                                                                                2 ) ) );
+        assertThat( configListener.getConfiguration( "object", SimpletonInt.class ), equalTo( new SimpletonInt( "foo", 2 ) ) );
     }
 
     @Test
@@ -70,8 +69,8 @@ public class DotConfConfigurationReaderTest
         throws Exception
     {
         final List<String> lines =
-            new ListEx( "[mappings]", "newUser: templates/custom-newUser", "changePassword: templates/change-password",
-                        "", "", "[object]", "one=foo", "two: 2" );
+            new ListEx( "[mappings]", "newUser: templates/custom-newUser", "changePassword: templates/change-password", "", "", "[object]",
+                        "one=foo", "two: 2" );
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writeLines( lines, LINE_SEPARATOR, baos );
@@ -89,8 +88,27 @@ public class DotConfConfigurationReaderTest
                                            .get( "newUser" ), equalTo( "templates/custom-newUser" ) );
         assertThat( (String) configListener.getConfiguration( "mappings", Map.class )
                                            .get( "changePassword" ), equalTo( "templates/change-password" ) );
-        assertThat( configListener.getConfiguration( "object", SimpletonInt.class ), equalTo( new SimpletonInt( "foo",
-                                                                                                                2 ) ) );
+        assertThat( configListener.getConfiguration( "object", SimpletonInt.class ), equalTo( new SimpletonInt( "foo", 2 ) ) );
+    }
+
+    @Test
+    public void readOneSectionWithMapParserAndLineContinuation()
+        throws Exception
+    {
+        final List<String> lines = new ListEx( "[mappings]", "newUser: templates/custom-newUser \\" + "\n        Testing" );
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        writeLines( lines, LINE_SEPARATOR, baos );
+
+        final DefaultConfigurationListener configListener = new DefaultConfigurationListener().with( "mappings", new MapSectionListener() );
+
+        final ConfigurationRegistry dispatcher = new DefaultConfigurationRegistry( configListener );
+        final DotConfConfigurationReader reader = new DotConfConfigurationReader( dispatcher );
+
+        reader.loadConfiguration( new ByteArrayInputStream( baos.toByteArray() ) );
+
+        assertThat( (String) configListener.getConfiguration( "mappings", Map.class )
+                                           .get( "newUser" ), equalTo( "templates/custom-newUser Testing" ) );
     }
 
 }
