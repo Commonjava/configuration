@@ -44,7 +44,7 @@ public class DotConfConfigurationReader
     public DotConfConfigurationReader( final ConfigurationRegistry dispatch )
     {
         this.dispatch = dispatch;
-        parameter = Pattern.compile( "\\s*([^#]+)\\s*[:=]\\s*([^#]+)(\\s*#.*)?" );
+        parameter = Pattern.compile( "\\s*([^#:=]+)\\s*[:=]\\s*([^#]+)(\\s*#.*)?" );
     }
 
     public DotConfConfigurationReader( final Class<?>... types )
@@ -134,7 +134,7 @@ public class DotConfConfigurationReader
                         try
                         {
                             final String value = interp.interpolate( continuedVal.toString() );
-                            dispatch.parameter( sectionName, continuedKey, value );
+                            dispatch.parameter( sectionName, continuedKey.trim(), value.trim() );
                             continuedKey = null;
                             continuedVal = null;
                         }
@@ -171,7 +171,7 @@ public class DotConfConfigurationReader
                                                               key, value, e.getMessage() );
                         }
 
-                        dispatch.parameter( sectionName, key, value );
+                        dispatch.parameter( sectionName, key.trim(), value.trim() );
                     }
                 }
             }

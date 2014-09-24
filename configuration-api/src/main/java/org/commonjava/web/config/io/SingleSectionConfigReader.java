@@ -89,7 +89,7 @@ public class SingleSectionConfigReader
                                                   e.getMessage() );
             }
 
-            dispatch.parameter( DEFAULT_SECTION, key, props.getProperty( key ) );
+            dispatch.parameter( DEFAULT_SECTION, key.trim(), value.trim() );
         }
 
         dispatch.sectionComplete( DEFAULT_SECTION );
