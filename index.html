@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Configuration : APIs for Loading Application Configuration Data">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Configuration</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/Commonjava/configuration">View on GitHub</a>
+
+          <h1 id="project_title">Configuration</h1>
+          <h2 id="project_tagline">APIs for Loading Application Configuration Data</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/Commonjava/configuration/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/Commonjava/configuration/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a id="stretch-out-on-our-sectional" class="anchor" href="#stretch-out-on-our-sectional" aria-hidden="true"><span class="octicon octicon-link"></span></a>Stretch Out on Our Sectional</h3>
+
+<p>The Configuration API provides a means of reading single- and multi-section configuration files and injecting their values into Java configuration objects. This allows your application to include add-ons or plugins flexibly, and configure them as part of the main application configuration. Each part of your application will receive its configuration and not have to know anything about any other part.</p>
+
+<h3>
+<a id="annotations" class="anchor" href="#annotations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Annotations</h3>
+
+<ul>
+<li>
+<code>@SectionName("somepart")</code> denotes a configuration class that is responsible for managing the <code>somepart</code> section of your application's configuration file.</li>
+<li>
+<code>@ConfigName("my.email")</code> denotes the setter method that should be used to inject the <code>my.email</code> configuration field into your configuration class.</li>
+<li>
+<code>@ConfigNames({"field.one", "field.two"}) denotes a constructor in your configuration class which will have two configuration fields (</code>field.one<code>and</code>field.two`) injected as parameters (in order, of course).</li>
+</ul>
+
+<h3>
+<a id="simple-is-good-too" class="anchor" href="#simple-is-good-too" aria-hidden="true"><span class="octicon octicon-link"></span></a>Simple is Good, Too</h3>
+
+<p>Don't need multiple sections in your configuration? That's okay, too. Simply leave off the <code>@SectionName</code> annotation for your configuration class, and the fields in the configuration file without a declared section will be injected. If you want to make sure the configuration reader doesn't even try to load multiple sections, use something like <code>org.commonjava.web.config.io.SingleSectionConfigReader</code> to read your config file.</p>
+
+<h3>
+<a id="conf-goodness" class="anchor" href="#conf-goodness" aria-hidden="true"><span class="octicon octicon-link"></span></a>
+<code>.conf</code> Goodness</h3>
+
+<p>The Configuration project also contains a module - <code>configuration-dotconf</code> - which knows how to read .ini-style configurations. These are often named <code>something.conf</code> in linux, hence the module name. The configuration reader in this module is <code>org.commonjava.web.config.dotconf.DotConfConfigurationReader</code>, and it works with files like this:</p>
+
+<pre><code>[main]
+port=8080
+bind=0.0.0.0
+
+[auth]
+mutual.ssl=enabled
+...
+</code></pre>
+
+<h3>
+<a id="all-inclusive" class="anchor" href="#all-inclusive" aria-hidden="true"><span class="octicon octicon-link"></span></a>All-Inclusive</h3>
+
+<p>Many management systems like Puppet and Chef work much better when each recipe has an associated file, rather than having multiple recipes that all modify a single file. This is what makes applications like Apache HTTPd simpler to manage; it's use of <code>/etc/httpd/conf.d</code> means each virtual host or module activation can have its own file.</p>
+
+<p>Your application's configuration can be managed in the same way with <code>org.commonjava.web.config.io.ConfigFileUtils</code>. Simply add a line like <code>Include conf.d/*.conf</code> to your application's configuration, and then use the method <code>ConfigFileUtils.readFileWithIncludes(File)</code> to get an <code>InputStream</code> that contains the main file's content along with all matching files in the <code>conf.d/</code> directory matching the given pattern. The merged contents will replace the original <code>Include ...</code> line.</p>
+
+<h3>
+<a id="existing-beans-new-beans-maps-and-even-properties-sections" class="anchor" href="#existing-beans-new-beans-maps-and-even-properties-sections" aria-hidden="true"><span class="octicon octicon-link"></span></a>Existing Beans, New Beans, Maps and Even Properties Sections</h3>
+
+<p>Sometimes it's easier to populate an existing object, other times it's simpler to let the configuration API create the configuration object instances for you. The Configuration API contains section listeners for both cases.</p>
+
+<p>And at other times, you need something more free-form. Sometimes it's just simpler to create a map of options and let your application deal with the flexibility of an arbitrary key-value map for a particular configuration section. Or a Properties instance. Configuration API can handle these cases, too.</p>
+
+<p>The Configuration API includes the following section listener implementations:</p>
+
+<ul>
+<li>
+<code>org.commonjava.web.config.section.BeanSectionListener&lt;T&gt;</code> - Populate the fields of an existing bean, or creates a new bean from the provided configuration parameters.</li>
+<li>
+<code>org.commonjava.web.config.section.MapSectionListener</code> - Populates a new <code>java.util.Map</code> instance from the provided configuration parameters.</li>
+<li>
+<code>org.commonjava.web.config.section.PropertiesSectionListener</code> - Populates a new <code>java.util.Properties</code> instance from the provided configuration parameters.</li>
+</ul>
+
+<p>Or, you can provide your own implementation of <code>org.commonjava.web.config.section.ConfigurationSectionListener&lt;T&gt;</code>.</p>
+
+<h3>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
+
+<p>Here's an example that reads a multi-section configuration which can be spread into multiple, included configuration files:</p>
+
+<pre><code>public class ConfigFactory
+    extends DefaultConfigurationListener
+{
+    private Set&lt;TypedConfigurationSectionListener&lt;?&gt;&gt; sections;
+    public ConfigFactory(Set&lt;TypedConfigurationSectionListener&lt;?&gt;&gt; sections){ this.sections = sections; }
+
+    public void load( final String configPath )
+        throws ConfigurationException
+    {
+        for ( TypedConfigurationSectionListener&lt;?&gt; section : sections )
+        {
+            with( section.getSectionName(), section.getConfigurationClass() );
+        }
+
+        File configFile = new File( configPath );
+        if ( configFile.isDirectory() )
+        {
+            configFile = new File( configFile, "main.conf" );
+        }
+
+        InputStream stream = null;
+        try
+        {
+            stream = ConfigFileUtils.readFileWithIncludes( config );
+            new DotConfConfigurationReader( this ).loadConfiguration( stream );
+        }
+        catch ( final IOException e )
+        {
+            throw new ConfigurationException( "Cannot open configuration file: {}. Reason: {}", e, configPath,
+                                              e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( stream );
+        }
+    }
+[...]
+}
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Configuration maintained by <a href="https://github.com/Commonjava">Commonjava</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
