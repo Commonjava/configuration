@@ -6,7 +6,8 @@ defaults:
     values:
       layout: "slate"
 
-title: "Commonjava :: Configuration"
+siteTitle: "Commonjava"
+projectTitle: " :: Configuration"
 tagline: "APIs for Loading Application Configuration Data"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
