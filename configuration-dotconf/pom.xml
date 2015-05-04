@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.util</groupId>
     <artifactId>configuration</artifactId>
-    <version>0.7.1-SNAPSHOT</version>
+    <version>0.7.1</version>
   </parent>
   
   <artifactId>configuration-dotconf</artifactId>

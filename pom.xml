@@ -27,7 +27,7 @@
   
   <groupId>org.commonjava.util</groupId>
   <artifactId>configuration</artifactId>
-  <version>0.7.1-SNAPSHOT</version>
+  <version>0.7.1</version>
   <packaging>pom</packaging>
 
   <name>Consolidated Configuration Support</name>
@@ -46,7 +46,7 @@
     <connection>scm:git:https://github.com/Commonjava/configuration.git</connection>
     <developerConnection>scm:git:git@github.com:Commonjava/configuration.git</developerConnection>
     <url>http://github.com/Commonjava/configuration</url>
-    <tag>HEAD</tag>
+    <tag>configuration-0.7.1</tag>
   </scm>
 
   <dependencies>
@@ -90,7 +90,7 @@
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-api</artifactId>
-        <version>0.7.1-SNAPSHOT</version>
+        <version>0.7.1</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
