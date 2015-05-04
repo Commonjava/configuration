@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>6</version>
+    <version>7</version>
   </parent>
   
   <groupId>org.commonjava.util</groupId>
@@ -43,9 +43,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:http://jdcasey@github.com/jdcasey/configuration.git</connection>
-    <developerConnection>scm:git:git@github.com:jdcasey/configuration.git</developerConnection>
-    <url>http://github.com/jdcasey/configuration</url>
+    <connection>scm:git:https://github.com/Commonjava/configuration.git</connection>
+    <developerConnection>scm:git:git@github.com:Commonjava/configuration.git</developerConnection>
+    <url>http://github.com/Commonjava/configuration</url>
     <tag>HEAD</tag>
   </scm>
 
