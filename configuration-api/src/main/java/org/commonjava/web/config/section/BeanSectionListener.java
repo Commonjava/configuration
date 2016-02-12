@@ -37,7 +37,7 @@ public class BeanSectionListener<T>
 
     private final Class<T> type;
 
-    private final T instance;
+    private T instance;
 
     private final List<String> constructorArgs = new ArrayList<String>();
 
@@ -153,26 +153,26 @@ public class BeanSectionListener<T>
     public void sectionComplete( final String name )
         throws ConfigurationException
     {
-        // NOP (?)
-    }
-
-    @Override
-    public T getConfiguration()
-    {
         if ( instance != null )
         {
             recipe.setProperties( instance );
-
-            return instance;
         }
+        else
+        {
+            instance = type.cast( recipe.create() );
+        }
+    }
 
-        return type.cast( recipe.create() );
+    @Override
+    public synchronized T getConfiguration()
+    {
+        return instance;
     }
 
     @Override
     public String toString()
     {
-        return String.format( "BeanSectionListener [%s]", type.getName() );
+        return String.format( "BeanSectionListener [type: %s, instance: %s]", type.getName(), instance );
     }
 
     @Override
