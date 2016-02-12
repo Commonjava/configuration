@@ -36,6 +36,8 @@ import org.commonjava.web.config.ConfigurationRegistry;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.DefaultConfigurationRegistry;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DotConfConfigurationReader
     implements ConfigurationReader
@@ -87,6 +89,9 @@ public class DotConfConfigurationReader
     public void loadConfiguration( final InputStream stream, final Properties properties )
         throws ConfigurationException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Configuration parse starting." );
+
         List<String> lines;
         try
         {
@@ -120,8 +125,11 @@ public class DotConfConfigurationReader
                     continue;
                 }
 
+                logger.trace( "Marking section '{}' completed.", sectionName );
                 dispatch.sectionComplete( sectionName );
                 sectionName = trimmed.substring( 1, trimmed.length() - 1 );
+
+                logger.trace( "Starting section '{}'.", sectionName );
                 processSection = dispatch.sectionStarted( sectionName );
             }
             else if ( processSection )
@@ -139,6 +147,10 @@ public class DotConfConfigurationReader
                         try
                         {
                             final String value = interp.interpolate( continuedVal.toString() );
+
+                            logger.trace( "Section: {}, parameter: {}, value: {} (raw: {})", sectionName, continuedKey,
+                                          value.trim(), continuedVal );
+
                             dispatch.parameter( sectionName, continuedKey.trim(), value.trim() );
                             continuedKey = null;
                             continuedVal = null;
@@ -166,9 +178,10 @@ public class DotConfConfigurationReader
                             continue;
                         }
 
+                        String rawVal = value;
                         try
                         {
-                            value = interp.interpolate( value );
+                            value = interp.interpolate( rawVal );
                         }
                         catch ( final InterpolationException e )
                         {
@@ -176,13 +189,19 @@ public class DotConfConfigurationReader
                                                               key, value, e.getMessage() );
                         }
 
+                        logger.trace( "Section: {}, parameter: {}, value: {} (raw: {})", sectionName, key.trim(),
+                                      value.trim(), rawVal );
+
                         dispatch.parameter( sectionName, key.trim(), value.trim() );
                     }
                 }
             }
         }
 
+        logger.trace( "Marking section '{}' completed.", sectionName );
         dispatch.sectionComplete( sectionName );
+
+        logger.trace( "Configuration parse complete." );
         dispatch.configurationParsed();
     }
 

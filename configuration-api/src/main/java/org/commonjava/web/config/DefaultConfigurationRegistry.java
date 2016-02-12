@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultConfigurationRegistry
     implements ConfigurationRegistry
@@ -74,7 +76,7 @@ public class DefaultConfigurationRegistry
             }
             else
             {
-                throw new ConfigurationException( "Invalid input for configuration registry: %s", d );
+                with( new DefaultConfigurationListener().with(d) );
             }
         }
     }
@@ -151,7 +153,9 @@ public class DefaultConfigurationRegistry
     public void parameter( final String section, final String name, final String value )
         throws ConfigurationException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         final ConfigurationSectionListener<?> secListener = sectionMap.get( section );
+        logger.trace( "Using listener: {} for section: {}", secListener, section );
         secListener.parameter( name, value );
     }
 
