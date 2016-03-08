@@ -19,6 +19,7 @@ import static org.apache.commons.io.IOUtils.readLines;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -68,6 +69,12 @@ public class DotConfConfigurationReader
 
     public DotConfConfigurationReader( final ConfigurationListener... listeners )
         throws ConfigurationException
+    {
+        this( new DefaultConfigurationRegistry( listeners ) );
+    }
+
+    public DotConfConfigurationReader( final Collection<ConfigurationListener> listeners )
+            throws ConfigurationException
     {
         this( new DefaultConfigurationRegistry( listeners ) );
     }

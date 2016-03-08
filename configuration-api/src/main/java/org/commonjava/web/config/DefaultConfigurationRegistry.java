@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -53,6 +54,13 @@ public class DefaultConfigurationRegistry
         throws ConfigurationException
     {
         this.listeners = Arrays.asList( listeners );
+        mapSectionListeners();
+    }
+
+    public DefaultConfigurationRegistry( final Collection<ConfigurationListener> listeners )
+            throws ConfigurationException
+    {
+        this.listeners = listeners;
         mapSectionListeners();
     }
 
