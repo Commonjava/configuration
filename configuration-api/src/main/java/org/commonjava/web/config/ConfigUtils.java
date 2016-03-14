@@ -17,6 +17,8 @@ package org.commonjava.web.config;
 
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ConfigUtils
 {
@@ -25,11 +27,28 @@ public final class ConfigUtils
     {
     }
 
-    public static String getSectionName( final Class<?> cls )
+    public static String getSectionName( Class<?> cls )
     {
-        final SectionName anno = cls.getAnnotation( SectionName.class );
+        Logger logger = LoggerFactory.getLogger( ConfigUtils.class );
+        SectionName anno = null;
+        do
+        {
+            logger.trace( "Retrieving @SectionName annotation from: {}", cls.getName() );
+            anno = cls.getAnnotation( SectionName.class );
+            cls = cls.getSuperclass();
+        }
+        while ( anno == null && cls != null );
+
+        logger.debug( "Anotation: {} (value: {})", anno, ( anno == null ? "NONE" : anno.value() ) );
 
         return anno == null ? ConfigurationSectionListener.DEFAULT_SECTION : anno.value();
     }
 
+    public static String getSectionName( Object instance )
+    {
+        Logger logger = LoggerFactory.getLogger( ConfigUtils.class );
+        logger.trace( "Retrieving @SectionName annotation from instance: {}", instance );
+
+        return getSectionName( instance.getClass() );
+    }
 }

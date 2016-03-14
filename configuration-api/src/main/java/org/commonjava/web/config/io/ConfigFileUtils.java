@@ -15,16 +15,24 @@
  */
 package org.commonjava.web.config.io;
 
+import org.apache.commons.io.IOUtils;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.commonjava.web.config.ConfigurationException;
+
 import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +43,8 @@ public final class ConfigFileUtils
 
     private static final String INCLUDE_COMMAND = "Include ";
 
+    private static final String VARIABLES_COMMAND = "Variables ";
+
     private static final String GLOB_BASE_PATTERN = "([^\\?\\*]+)[\\\\\\/]([\\*\\?]+.+)";
 
     private static final String GLOB_IDENTIFYING_PATTERN = ".*[\\?\\*].*";
@@ -44,46 +54,107 @@ public final class ConfigFileUtils
     }
 
     public static InputStream readFileWithIncludes( final String path )
-        throws IOException
+            throws IOException, ConfigurationException
     {
-        return readFileWithIncludes( new File( path ) );
+        return readFileWithIncludes( new File( path ), null );
+    }
+
+    public static InputStream readFileWithIncludes( final String path, Properties props )
+            throws IOException, ConfigurationException
+    {
+        return readFileWithIncludes( new File( path ), props );
     }
 
     public static InputStream readFileWithIncludes( final File f )
-        throws IOException
+            throws IOException, ConfigurationException
     {
-        final List<String> lines = readLinesWithIncludes( f );
+        return readFileWithIncludes( f, null );
+    }
+
+    public static InputStream readFileWithIncludes( final File f, Properties props )
+            throws IOException, ConfigurationException
+    {
+        final List<String> lines = readLinesWithIncludes( f, props, false );
 
         return new ByteArrayInputStream( join( lines, LS ).getBytes() );
     }
 
     public static List<String> readLinesWithIncludes( final File f )
-        throws IOException
+            throws IOException, ConfigurationException
     {
-        final List<String> result = new ArrayList<String>();
+        return readLinesWithIncludes( f, null, false );
+    }
 
-        final List<String> lines = readLines( f );
+    public static List<String> readLinesWithIncludes( final File f, Properties props )
+            throws IOException, ConfigurationException
+    {
+        return readLinesWithIncludes( f, props, false );
+    }
+
+    public static List<String> readLinesWithIncludes( final File f, Properties props, boolean ignoreVariables )
+            throws IOException, ConfigurationException
+    {
+        Properties vars = new Properties();
+
+        final List<String> lines = new ArrayList<String>();
         final File dir = f.getParentFile();
-        for ( final String line : lines )
+        for ( final String line : readLines( f ) )
         {
             if ( line.startsWith( INCLUDE_COMMAND ) )
             {
                 final String glob = line.substring( INCLUDE_COMMAND.length() );
                 for ( final File file : findMatching( dir, glob ) )
                 {
-                    result.addAll( readLinesWithIncludes( file ) );
+                    lines.addAll( readLinesWithIncludes( file, null, true ) );
+                }
+            }
+            else if ( !ignoreVariables && line.startsWith( VARIABLES_COMMAND ) )
+            {
+                final String glob = line.substring( VARIABLES_COMMAND.length() );
+                InputStream fs = null;
+                for ( final File file : findMatching( dir, glob ) )
+                {
+                    try
+                    {
+                        fs = new FileInputStream( file );
+                        vars.load( fs );
+                    }
+                    finally
+                    {
+                        IOUtils.closeQuietly( fs );
+                        fs = null;
+                    }
                 }
             }
             else
             {
-                result.add( line );
+                lines.add( line );
+            }
+        }
+
+        StringSearchInterpolator ssi = new StringSearchInterpolator();
+        ssi.addValueSource( new PropertiesBasedValueSource( props ) );
+        ssi.addValueSource( new PropertiesBasedValueSource( vars ) );
+        ssi.addValueSource( new PropertiesBasedValueSource( System.getProperties() ) );
+
+        List<String> result = new ArrayList<String>();
+        for ( String line : lines )
+        {
+            try
+            {
+                result.add( ssi.interpolate( line ) );
+            }
+            catch ( InterpolationException e )
+            {
+                throw new ConfigurationException( "Failed to resolve expressions in '%s'. Reason: %s", e, line,
+                                                  e.getMessage() );
             }
         }
 
         return result;
     }
 
-    public static File[] findMatching( final File dir, final String glob )
+    public static File[] findMatching( final File dir, String glob )
         throws IOException
     {
         if ( !glob.matches( GLOB_IDENTIFYING_PATTERN ) )
