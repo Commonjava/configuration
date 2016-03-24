@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -53,6 +54,13 @@ public class DefaultConfigurationRegistry
         throws ConfigurationException
     {
         this.listeners = Arrays.asList( listeners );
+        mapSectionListeners();
+    }
+
+    public DefaultConfigurationRegistry( final Collection<ConfigurationListener> listeners )
+            throws ConfigurationException
+    {
+        this.listeners = listeners;
         mapSectionListeners();
     }
 
@@ -178,6 +186,8 @@ public class DefaultConfigurationRegistry
     private void mapListener( final ConfigurationListener listener )
         throws ConfigurationException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Mapping configuration listener: {}", listener );
         if ( sectionMap == null )
         {
             sectionMap = new HashMap<String, ConfigurationSectionListener<?>>();
@@ -187,14 +197,23 @@ public class DefaultConfigurationRegistry
         for ( final Map.Entry<String, ConfigurationSectionListener<?>> entry : parsers.entrySet() )
         {
             final String section = entry.getKey();
-            if ( sectionMap.containsKey( section ) )
-            {
-                throw new ConfigurationException(
-                                                  "Section collision! More than one ConfigurationParser bound to section: %s\n\t%s\n\t%s",
-                                                  section, sectionMap.get( section ), entry.getValue() );
-            }
+            logger.debug( "Attempting to map new section listener: {} with section name: {}", entry.getValue(), section );
+            ConfigurationSectionListener<?> sectionListener = sectionMap.get( section );
 
-            sectionMap.put( section, entry.getValue() );
+            if ( sectionListener != null )
+            {
+                // check if it's the same instance coming in a different way...
+                if ( sectionListener != entry.getValue())
+                {
+                    throw new ConfigurationException(
+                            "Section collision! More than one ConfigurationParser bound to section: %s\n\t%s\n\t%s",
+                            section, listener, entry.getValue() );
+                }
+            }
+            else
+            {
+                sectionMap.put( section, entry.getValue() );
+            }
         }
     }
 

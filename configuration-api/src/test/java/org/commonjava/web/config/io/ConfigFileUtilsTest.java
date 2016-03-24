@@ -27,14 +27,26 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.web.config.ConfigurationException;
 import org.junit.Test;
 
 public class ConfigFileUtilsTest
 {
 
     @Test
+    public void variablesResolvedFromVarsDGlobVariables()
+            throws IOException, ConfigurationException
+    {
+        final File dir = getResourcesDir();
+        final InputStream stream = ConfigFileUtils.readFileWithIncludes( new File( dir, "main.conf" ) );
+        final String config = IOUtils.toString( stream );
+
+        assertThat( config.contains( "some.other.config = blat" ), equalTo( true ) );
+    }
+
+    @Test
     public void readConfigFileWithConfDGlobIncludes()
-        throws IOException
+            throws IOException, ConfigurationException
     {
         final File dir = getResourcesDir();
         final InputStream stream = ConfigFileUtils.readFileWithIncludes( new File( dir, "main.conf" ) );

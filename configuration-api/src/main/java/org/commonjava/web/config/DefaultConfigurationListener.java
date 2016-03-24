@@ -140,9 +140,17 @@ public class DefaultConfigurationListener
     public <T> DefaultConfigurationListener with( final String sectionName, final T bean )
         throws ConfigurationException
     {
-        final String key = sectionName == null ? ConfigUtils.getSectionName( bean.getClass() ) : sectionName;
-        logger.info( "+section (bean): {} ({})", key, bean );
-        registerListener( key, new BeanSectionListener<T>( bean ) );
+        if( bean instanceof ConfigurationSectionListener )
+        {
+            with( sectionName, (ConfigurationSectionListener) bean );
+        }
+        else
+        {
+            final String key = sectionName == null ? ConfigUtils.getSectionName( bean.getClass() ) : sectionName;
+            logger.info( "+section (bean): {} ({})", key, bean );
+            registerListener( key, new BeanSectionListener<T>( bean ) );
+        }
+
         return this;
     }
 
