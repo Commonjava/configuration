@@ -24,9 +24,9 @@
     <version>0.9-SNAPSHOT</version>
   </parent>
   
-  <artifactId>configuration-dotconf</artifactId>
+  <artifactId>configuration-yaml</artifactId>
   
-  <name>Consolidated Configuration :: .conf Format</name>
+  <name>Consolidated Configuration :: YAML Format</name>
   
   <dependencies>
     <dependency>

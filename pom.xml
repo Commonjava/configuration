@@ -34,8 +34,9 @@
   <inceptionYear>2011</inceptionYear>
   
   <modules>
-    <module>configuration-api</module>
-    <module>configuration-dotconf</module>
+    <module>api</module>
+    <module>dotconf</module>
+    <module>yaml</module>
   </modules>
   
   <properties>

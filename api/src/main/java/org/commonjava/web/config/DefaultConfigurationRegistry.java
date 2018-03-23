@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 import org.slf4j.Logger;
@@ -31,62 +33,58 @@ public class DefaultConfigurationRegistry
 {
     private final Collection<ConfigurationListener> listeners;
 
+    private final Set<SectionConsumer> sectionConsumers;
+
     private Map<String, ConfigurationSectionListener<?>> sectionMap;
-
-    public DefaultConfigurationRegistry()
-    {
-        listeners = new ArrayList<ConfigurationListener>();
-    }
-
-    public DefaultConfigurationRegistry( final Class<?>... types )
-        throws ConfigurationException
-    {
-        this( new DefaultConfigurationListener( types ) );
-    }
-
-    public DefaultConfigurationRegistry( final ConfigurationSectionListener<?>... sectionListeners )
-        throws ConfigurationException
-    {
-        this( new DefaultConfigurationListener( sectionListeners ) );
-    }
-
-    public DefaultConfigurationRegistry( final ConfigurationListener... listeners )
-        throws ConfigurationException
-    {
-        this.listeners = Arrays.asList( listeners );
-        mapSectionListeners();
-    }
-
-    public DefaultConfigurationRegistry( final Collection<ConfigurationListener> listeners )
-            throws ConfigurationException
-    {
-        this.listeners = listeners;
-        mapSectionListeners();
-    }
 
     public DefaultConfigurationRegistry( final Object... data )
         throws ConfigurationException
     {
         listeners = new ArrayList<ConfigurationListener>();
+        sectionConsumers = new HashSet<SectionConsumer>();
         for ( final Object d : data )
         {
-            if ( d instanceof ConfigurationListener )
+            withUnknownSomething( d );
+        }
+    }
+
+    private void withUnknownSomething( Object d )
+            throws ConfigurationException
+    {
+        if ( d instanceof Collection )
+        {
+            Collection<?> collection = (Collection<?>) d;
+            for ( final Object o : collection )
             {
-                with( (ConfigurationListener) d );
-            }
-            else if ( d instanceof ConfigurationSectionListener<?> )
-            {
-                with( (ConfigurationSectionListener<?>) d );
-            }
-            else if ( d instanceof Class<?> )
-            {
-                with( (Class<?>) d );
-            }
-            else
-            {
-                with( new DefaultConfigurationListener().with(d) );
+                withUnknownSomething( o );
             }
         }
+        else if ( d instanceof SectionConsumer )
+        {
+            sectionConsumers.add( (SectionConsumer) d );
+        }
+        else if ( d instanceof ConfigurationListener )
+        {
+            with( (ConfigurationListener) d );
+        }
+        else if ( d instanceof ConfigurationSectionListener<?> )
+        {
+            with( (ConfigurationSectionListener<?>) d );
+        }
+        else if ( d instanceof Class<?> )
+        {
+            with( (Class<?>) d );
+        }
+        else
+        {
+            with( new DefaultConfigurationListener().with(d) );
+        }
+    }
+
+    public DefaultConfigurationRegistry with( final SectionConsumer consumer )
+    {
+        sectionConsumers.add( consumer );
+        return this;
     }
 
     public DefaultConfigurationRegistry with( final ConfigurationListener listener )
@@ -143,7 +141,14 @@ public class DefaultConfigurationRegistry
             return true;
         }
 
-        return false;
+        boolean process = false;
+        for ( final SectionConsumer sectionConsumer : sectionConsumers )
+        {
+            sectionConsumer.sectionStarted( name );
+            process = true;
+        }
+
+        return process;
     }
 
     @Override
@@ -155,6 +160,12 @@ public class DefaultConfigurationRegistry
         {
             listener.sectionComplete( name );
         }
+
+        for ( final SectionConsumer sectionConsumer : sectionConsumers )
+        {
+            sectionConsumer.sectionComplete( name );
+        }
+
     }
 
     @Override
@@ -165,6 +176,12 @@ public class DefaultConfigurationRegistry
         final ConfigurationSectionListener<?> secListener = sectionMap.get( section );
         logger.trace( "Using listener: {} for section: {}", secListener, section );
         secListener.parameter( name, value );
+
+        for ( final SectionConsumer sectionConsumer : sectionConsumers )
+        {
+            sectionConsumer.parameter( section, name, value );
+        }
+
     }
 
     protected synchronized void mapSectionListeners()

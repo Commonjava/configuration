@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.web.config;
+package org.commonjava.web.config.section;
 
-public interface ConfigurationRegistry
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.RawSectionListener;
+
+public interface ConfigurationSectionListener<T>
 {
 
-    void configurationParsed()
-        throws ConfigurationException;
+    static String DEFAULT_SECTION = "default";
 
-    boolean sectionStarted( final String name )
-        throws ConfigurationException;
+    void sectionStarted( String name )
+            throws ConfigurationException;
 
-    void sectionComplete( final String name )
-        throws ConfigurationException;
+    void parameter( String name, String value )
+            throws ConfigurationException;
 
-    void parameter( final String section, final String name, final String value )
-        throws ConfigurationException;
+    void sectionComplete( String name )
+            throws ConfigurationException;
+
+    T getConfiguration();
 
 }

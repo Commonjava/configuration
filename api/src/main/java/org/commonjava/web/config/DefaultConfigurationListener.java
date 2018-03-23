@@ -179,4 +179,5 @@ public class DefaultConfigurationListener
         final Object configuration = listener == null ? null : listener.getConfiguration();
         return configuration == null ? null : type.cast( configuration );
     }
+
 }
