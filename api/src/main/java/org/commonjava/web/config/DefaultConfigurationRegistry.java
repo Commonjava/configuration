@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 public class DefaultConfigurationRegistry
     implements ConfigurationRegistry
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     private final Collection<ConfigurationListener> listeners;
 
     private final Set<SectionConsumer> sectionConsumers;
@@ -137,6 +139,7 @@ public class DefaultConfigurationRegistry
         final ConfigurationSectionListener<?> listener = sectionMap.get( name );
         if ( listener != null )
         {
+            logger.debug( "{} starting section named: '{}' in: {}", this, name, listener );
             listener.sectionStarted( name );
             return true;
         }
@@ -158,6 +161,7 @@ public class DefaultConfigurationRegistry
         final ConfigurationSectionListener<?> listener = sectionMap.get( name );
         if ( listener != null )
         {
+            logger.debug( "{} completing section named: '{}' in: {}", this, name, listener );
             listener.sectionComplete( name );
         }
 
@@ -174,7 +178,7 @@ public class DefaultConfigurationRegistry
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         final ConfigurationSectionListener<?> secListener = sectionMap.get( section );
-        logger.trace( "Using listener: {} for section: {}", secListener, section );
+        logger.debug( "Using listener: {} for parameter: '{}' = '{}' in section: {}", secListener, name, value, section );
         secListener.parameter( name, value );
 
         for ( final SectionConsumer sectionConsumer : sectionConsumers )

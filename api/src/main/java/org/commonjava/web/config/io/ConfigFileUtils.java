@@ -20,6 +20,8 @@ import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.web.config.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.commons.lang.StringUtils.join;
@@ -94,6 +96,8 @@ public final class ConfigFileUtils
     public static List<String> readLinesWithIncludes( final File f, Properties props, boolean ignoreVariables )
             throws IOException, ConfigurationException
     {
+        Logger logger = LoggerFactory.getLogger( ConfigFileUtils.class );
+
         Properties vars = new Properties();
 
         final List<String> lines = new ArrayList<String>();
@@ -105,6 +109,7 @@ public final class ConfigFileUtils
                 final String glob = line.substring( INCLUDE_COMMAND.length() );
                 for ( final File file : findMatching( dir, glob ) )
                 {
+                    logger.debug( "Including configuration from: {}", file );
                     lines.addAll( readLinesWithIncludes( file, null, true ) );
                 }
             }

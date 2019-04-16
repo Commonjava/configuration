@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 
 import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.web.config.ConfigurationException;
@@ -96,6 +97,16 @@ public class DotConfConfigurationReader
     public void loadConfiguration( final InputStream stream, final Properties properties )
         throws ConfigurationException
     {
+        final StringSearchInterpolator interp = new StringSearchInterpolator();
+        interp.addValueSource( new PropertiesBasedValueSource( properties ) );
+
+        loadConfiguration( stream, interp );
+    }
+
+    @Override
+    public void loadConfiguration( final InputStream stream, final Interpolator interpolator )
+    throws ConfigurationException
+    {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Configuration parse starting." );
 
@@ -111,9 +122,6 @@ public class DotConfConfigurationReader
 
         String sectionName = ConfigurationSectionListener.DEFAULT_SECTION;
         boolean processSection = dispatch.sectionStarted( sectionName );
-
-        final StringSearchInterpolator interp = new StringSearchInterpolator();
-        interp.addValueSource( new PropertiesBasedValueSource( properties ) );
 
         String continuedKey = null;
         StringBuilder continuedVal = null;
@@ -138,6 +146,7 @@ public class DotConfConfigurationReader
 
                 logger.trace( "Starting section '{}'.", sectionName );
                 processSection = dispatch.sectionStarted( sectionName );
+                logger.debug( "Process section: '{}'? {}", sectionName, processSection );
             }
             else if ( processSection )
             {
@@ -153,9 +162,9 @@ public class DotConfConfigurationReader
 
                         try
                         {
-                            final String value = interp.interpolate( continuedVal.toString() );
+                            final String value = interpolator.interpolate( continuedVal.toString() );
 
-                            logger.trace( "Section: {}, parameter: {}, value: {} (raw: {})", sectionName, continuedKey,
+                            logger.debug( "Section: {}, parameter: {}, value: {} (raw: {})", sectionName, continuedKey,
                                           value.trim(), continuedVal );
 
                             dispatch.parameter( sectionName, continuedKey.trim(), value.trim() );
@@ -188,7 +197,7 @@ public class DotConfConfigurationReader
                         String rawVal = value;
                         try
                         {
-                            value = interp.interpolate( rawVal );
+                            value = interpolator.interpolate( rawVal );
                         }
                         catch ( final InterpolationException e )
                         {
@@ -196,7 +205,7 @@ public class DotConfConfigurationReader
                                                               key, value, e.getMessage() );
                         }
 
-                        logger.trace( "Section: {}, parameter: {}, value: {} (raw: {})", sectionName, key.trim(),
+                        logger.debug( "Section: {}, parameter: {}, value: {} (raw: {})", sectionName, key.trim(),
                                       value.trim(), rawVal );
 
                         dispatch.parameter( sectionName, key.trim(), value.trim() );
