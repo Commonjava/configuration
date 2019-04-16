@@ -13,18 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.web.config;
+package org.commonjava.web.config.section;
 
-import java.io.InputStream;
-import java.util.Properties;
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.RawSectionListener;
 
-public interface ConfigurationReader
+public interface ConfigurationSectionListener<T>
 {
 
-    void loadConfiguration( InputStream stream )
-        throws ConfigurationException;
+    static String DEFAULT_SECTION = "default";
 
-    void loadConfiguration( InputStream stream, Properties properties )
-        throws ConfigurationException;
+    void sectionStarted( String name )
+            throws ConfigurationException;
+
+    void parameter( String name, String value )
+            throws ConfigurationException;
+
+    void sectionComplete( String name )
+            throws ConfigurationException;
+
+    T getConfiguration();
 
 }

@@ -15,19 +15,23 @@
  */
 package org.commonjava.web.config;
 
-public interface ConfigurationRegistry
+import org.codehaus.plexus.interpolation.Interpolator;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+
+import java.io.InputStream;
+import java.util.Properties;
+
+public interface ConfigurationReader
 {
 
-    void configurationParsed()
+    void loadConfiguration( InputStream stream )
         throws ConfigurationException;
 
-    boolean sectionStarted( final String name )
+    void loadConfiguration( InputStream stream, Properties properties )
         throws ConfigurationException;
 
-    void sectionComplete( final String name )
-        throws ConfigurationException;
+    void loadConfiguration( InputStream stream, Interpolator interpolator )
+            throws ConfigurationException;
 
-    void parameter( final String section, final String name, final String value )
-        throws ConfigurationException;
 
 }

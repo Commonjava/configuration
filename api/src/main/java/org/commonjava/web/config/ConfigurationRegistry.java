@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.web.config.section;
+package org.commonjava.web.config;
 
-import org.commonjava.web.config.ConfigurationException;
-
-public interface ConfigurationSectionListener<T>
+public interface ConfigurationRegistry
+    extends SectionConsumer
 {
-
-    static String DEFAULT_SECTION = "default";
-
-    void sectionStarted( String name )
-        throws ConfigurationException;
-
-    void parameter( String name, String value )
-        throws ConfigurationException;
-
-    void sectionComplete( String name )
-        throws ConfigurationException;
-
-    T getConfiguration();
-
 }

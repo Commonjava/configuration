@@ -27,15 +27,16 @@
   
   <groupId>org.commonjava.util</groupId>
   <artifactId>configuration</artifactId>
-  <version>0.9-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Consolidated Configuration Support</name>
   <inceptionYear>2011</inceptionYear>
   
   <modules>
-    <module>configuration-api</module>
-    <module>configuration-dotconf</module>
+    <module>api</module>
+    <module>dotconf</module>
+    <module>yaml</module>
   </modules>
   
   <properties>
@@ -43,10 +44,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:https://github.com/Commonjava/configuration.git</connection>
+    <connection>https://github.com/Commonjava/configuration.git</connection>
     <developerConnection>scm:git:git@github.com:Commonjava/configuration.git</developerConnection>
     <url>http://github.com/Commonjava/configuration</url>
-    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
@@ -94,7 +94,7 @@
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-api</artifactId>
-        <version>0.9-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xbean</groupId>
@@ -104,7 +104,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-interpolation</artifactId>
-        <version>1.19</version>
+        <version>1.25</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
